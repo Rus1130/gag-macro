@@ -1,7 +1,7 @@
 {
     "kill_key": "F6",
     "seeds": {
-        "Carrot": true,
+        "Carrot": false,
         "Strawberry": false,
         "Blueberry": false,
         "Orange Tulip": false,
@@ -14,14 +14,38 @@
         "Bamboo": false,
         "Coconut": false,
         "Cactus": false,
-        "Dragonfruit": false,
+        "Dragon Fruit": false,
         "Mango": false,
         "Grape": false,
         "Mushroom": false,
         "Pepper": false,
         "Cacao": false,
-        "Beanstalk": false,
-        "Emberlily": false,
-        "Sugarapple": false
+        "Beanstalk": true,
+        "Ember Lily": true,
+        "Sugar Apple": true
+    },
+    "buy_counts": {
+        "Carrot": 30,
+        "Strawberry": 7,
+        "Blueberry": 7,
+        "Orange Tulip": 20,
+        "Tomato": 6,
+        "Corn": 20,
+        "Daffodil": 20,
+        "Watermelon": 5,
+        "Pumpkin": 5,
+        "Apple": 1,
+        "Bamboo": 20,
+        "Coconut": 10,
+        "Cactus": 10,
+        "Dragon Fruit": 1,
+        "Mango": 1,
+        "Grape": 1,
+        "Mushroom": 25,
+        "Pepper": 1,
+        "Cacao": 1,
+        "Beanstalk": 1,
+        "Ember Lily": 1,
+        "Sugar Apple": 1
     }
 }

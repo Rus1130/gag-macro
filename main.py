@@ -4,6 +4,7 @@ import tkinter as tk
 import time
 import json
 import keyboard
+import os
 
 CONFIG = None
 
@@ -43,8 +44,8 @@ def create_group(parent, column, title, features):
 
 seed_list = [
     "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn", "Daffodil",
-    "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus", "Dragonfruit",
-    "Mango", "Grape", "Mushroom", "Pepper", "Cacao", "Beanstalk", "Emberlily", "Sugarapple"
+    "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus", "Dragon Fruit",
+    "Mango", "Grape", "Mushroom", "Pepper", "Cacao", "Beanstalk", "Ember Lily", "Sugar Apple"
 ]
 features_col2 = ["Delta", "Epsilon", "Zeta"]
 seed_indexes = None
@@ -105,7 +106,6 @@ def launch_window():
             f.write(json.dumps(CONFIG, indent=4))
 
         loop_counter = True
-        # return_to_corner()
 
     start_button = tk.Button(root, text="Start", font=("Arial", 12, "bold"), command=start_macro)
     start_button.grid(row=max(len(seed_list), len(features_col2)) + 2, column=0, columnspan=2, pady=20)
@@ -116,66 +116,46 @@ def launch_window():
 loop_counter = False
 last_fired = -1
 
-def return_to_corner():
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("w")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-    pydirectinput.press("a")
-
 def macro_loop():
     global seed_indexes
     # uncomment vvvv
-    # return_to_corner()
-    # pydirectinput.press("d", presses=3, interval=0.1)
-    # pydirectinput.press("enter")
+    pydirectinput.press("d", presses=3, interval=0.1)
+    pydirectinput.press("enter")
     time.sleep(1)
     pydirectinput.press("e")
-    time.sleep(4)
-    pydirectinput.press("s")
-    print(seed_indexes)
+    time.sleep(5)
+    pydirectinput.press("down")
+
     # loop through the seed indexes and press them
     i = 0
     while i < len(seed_indexes):
         pydirectinput.press("s", presses=seed_indexes[i], interval=0.1)
         time.sleep(0.5)
-        pydirectinput.press("enter", presses=1, interval=0.1)
+        pydirectinput.press("enter", presses=1, interval=0.05)
         time.sleep(0.5)
-        pydirectinput.press("s", presses=1, interval=0.1)
+        pydirectinput.press("s", presses=1, interval=0.05)
         time.sleep(0.5)
-        pydirectinput.press("enter", presses=30, interval=0.01)
+        buyCount = CONFIG['buy_counts'].get(seed_list[seed_indexes[i]], 1)  # Default to 1 if not specified
+        pydirectinput.press("enter", presses=buyCount, interval=0.05)
         time.sleep(0.5)
-        pydirectinput.press("w", presses=1, interval=0.1)
+        pydirectinput.press("w", presses=1, interval=0.05)
         time.sleep(0.5)
-        pydirectinput.press("enter", presses=1, interval=0.1)
+        pydirectinput.press("enter", presses=1, interval=0.05)
         time.sleep(0.5)
-        pydirectinput.press("\\")
-        time.sleep(0.5)
-        pydirectinput.press("\\")
+        pydirectinput.press("w", presses=seed_indexes[i], interval=0.1)
         i += 1
 
-    pydirectinput.press("d", presses=5, interval=0.25)
-    time.sleep(0.5)
-    pydirectinput.press("s", presses=1, interval=0.25)
-    time.sleep(0.5)
-    pydirectinput.press("d", presses=1)
+    pydirectinput.press("w")
     time.sleep(0.5)
     pydirectinput.press("enter")
+    time.sleep(1)
+    pydirectinput.press("w")
+    time.sleep(0.5)
+    pydirectinput.press("a")
+    time.sleep(0.5)
+    pydirectinput.press("enter")
+    time.sleep(0.5)
+    pydirectinput.press("a", presses=4, interval=0.1)
     # continue here
     print("macro loop")
 
@@ -184,7 +164,13 @@ launch_window()
 while loop_counter == True:
     current_time = int(time.time())
 
-    if current_time % 10 == 0 and current_time != last_fired:
+    if keyboard.is_pressed(CONFIG['kill_key']):
+        print(f"{CONFIG['kill_key']} pressed — stopping macro.")
+        loop_counter = False
+        launch_window()
+        break
+
+    if current_time % 300 == 0 and current_time != last_fired:
         macro_loop()
         last_fired = current_time
 
@@ -192,5 +178,6 @@ while loop_counter == True:
         print(f"{CONFIG['kill_key']} pressed — stopping macro.")
         loop_counter = False
         launch_window()
+        break;
 
     time.sleep(0.1)
