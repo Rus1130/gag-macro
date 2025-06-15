@@ -1,6 +1,7 @@
 {
+    "kill_key": "F6",
     "seeds": {
-        "Carrot": false,
+        "Carrot": true,
         "Strawberry": false,
         "Blueberry": false,
         "Orange Tulip": false,

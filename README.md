@@ -8,3 +8,8 @@ Try to have the camera as level as possible.
 4. Make sure that the Recall Wrench is in your **2nd** slot and is not equipped when the macro starts.
 ![Wrench](wrench.png "Wrench")
 5. Start the macro by clicking the "Start" button in the UI.
+# Make sure that there are no selected seeds or gears in the shop.
+Bad:
+![bad selection](bad_selection.png "Bad selection")
+Good:
+![good selection](good_selection.png "Good selection")
