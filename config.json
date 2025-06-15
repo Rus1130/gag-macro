@@ -24,6 +24,20 @@
         "Ember Lily": true,
         "Sugar Apple": true
     },
+    "gears": {
+        "Watering Can": true,
+        "Trowel": true,
+        "Recall Wrench": true,
+        "Basic Sprinkler": false,
+        "Advanced Sprinkler": false,
+        "Godly Sprinkler": true,
+        "Lightning Rod": true,
+        "Master Sprinkler": true,
+        "Cleaning Spray": false,
+        "Favorite Tool": false,
+        "Harvest Tool": false,
+        "Friendship Pot": false
+    },
     "buy_counts": {
         "Carrot": 25,
         "Strawberry": 6,
@@ -46,6 +60,18 @@
         "Cacao": 1,
         "Beanstalk": 1,
         "Ember Lily": 1,
-        "Sugar Apple": 1
+        "Sugar Apple": 1,
+        "Watering Can": 5,
+        "Trowel": 5,
+        "Recall Wrench": 5,
+        "Basic Sprinkler": 5,
+        "Advanced Sprinkler": 5,
+        "Godly Sprinkler": 1,
+        "Lightning Rod": 1,
+        "Master Sprinkler": 1,
+        "Cleaning Spray": 1,
+        "Favorite Tool": 1,
+        "Harvest Tool": 1,
+        "Friendship Pot": 1
     }
 }
