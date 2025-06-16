@@ -6,7 +6,7 @@ import json
 import keyboard
 
 CONFIG = None
-pyautogui.MINIMUM_DURATION = 0.01
+pydirectinput.MINIMUM_DURATION = 0.01
 
 # get the config file
 with open("config.json", "r") as f:
@@ -47,19 +47,25 @@ seed_list = [
     "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut", "Cactus", "Dragon Fruit",
     "Mango", "Grape", "Mushroom", "Pepper", "Cacao", "Beanstalk", "Ember Lily", "Sugar Apple"
 ]
+
 gear_list = [ 
     "Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Lightning Rod", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"
 ]
 
+egg_list = [
+    "common", "uncommon", "rare", "legendary", "mythical", "bug"
+]
+
 seed_indexes = None
 gear_indexes = None
+selected_eggs = None
 
 def launch_window():
-    global seed_list, gear_list
+    global seed_list, gear_list, egg_list, selected_eggs
 
     root = tk.Tk()
     root.title("Grow a Garden Macro")
-    root.geometry("600x1000")
+    root.geometry("700x1000")
 
     def create_group(parent, column, title, features):
         label = tk.Label(parent, text=title, font=("Arial", 12, "bold"))
@@ -87,6 +93,9 @@ def launch_window():
             if feature in CONFIG['gears']:
                 var.set(CONFIG['gears'][feature])
 
+            if feature in CONFIG['eggs']:
+                var.set(CONFIG['eggs'][feature])
+
             chk.grid(row=2+i, column=column, sticky="w", padx=30)
             child_vars.append(var)
             child_checks.append(chk)
@@ -95,9 +104,10 @@ def launch_window():
 
     seeds_vars = create_group(root, column=0, title="Seeds", features=seed_list)
     gear_vars = create_group(root, column=1, title="Gears", features=gear_list)
+    egg_vars = create_group(root, column=2, title="Eggs", features=egg_list)
 
     def start_macro():
-        global loop_counter, seed_indexes, gear_indexes
+        global loop_counter, seed_indexes, gear_indexes, selected_eggs
         pyautogui.alert("Macro started! Macro starts 5 seconds after you press OK.")
         time.sleep(5);
         pyautogui.getWindowsWithTitle("Grow a Garden Macro")[0].close()
@@ -105,12 +115,14 @@ def launch_window():
 
         selected_seeds = [seed for seed, var in zip(seed_list, seeds_vars) if var.get()]
         selected_gears = [gear for gear, var in zip(gear_list, gear_vars) if var.get()]
+        selected_eggs = [egg for egg, var in zip(egg_list, egg_vars) if var.get()]
         seed_indexes = [seed_list.index(seed) for seed in selected_seeds]
         gear_indexes = [gear_list.index(gear) for gear in selected_gears]
         # save the selected seeds to the config file
 
         CONFIG['seeds'] = {seed: seed in selected_seeds for seed in seed_list}
         CONFIG['gears'] = {gear: gear in selected_gears for gear in gear_list}
+        CONFIG['eggs'] = {egg: egg in selected_eggs for egg in egg_list}
 
         with open("config.json", "w") as f:
             f.write(json.dumps(CONFIG, indent=4))
@@ -119,16 +131,17 @@ def launch_window():
         loop_counter = True
 
     start_button = tk.Button(root, text="Start", font=("Arial", 12, "bold"), command=start_macro)
-    start_button.grid(row=max(len(seed_list), len(gear_list)) + 2, column=0, columnspan=2, pady=20)
+    start_button.grid(row=max(len(seed_list), len(gear_list), len(egg_list)) + 2, column=0, columnspan=2, pady=20)
 
     root.focus_force()
     root.mainloop()
 
 loop_counter = False
 last_fired = -1
+last_fired_egg = -1
 
 def macro_loop():
-    global seed_indexes, gear_indexes, gear_list, seed_list
+    global seed_indexes, gear_indexes, gear_list, seed_list, egg_indexes, egg_list
     # seed macro =====================================================================================
     pydirectinput.press("d", presses=3, interval=0.1)
     pydirectinput.press("enter")
@@ -194,7 +207,7 @@ def macro_loop():
     pydirectinput.click()
     time.sleep(2)
     pydirectinput.press("\\")
-    time.sleep(4)
+    time.sleep(3)
     pydirectinput.press("d", presses=3, interval=0.1)
     time.sleep(0.5)
     pydirectinput.press("s")
@@ -230,7 +243,12 @@ def macro_loop():
     pydirectinput.press("a", presses=4, interval=0.1)
     time.sleep(0.5)
 
-
+    # egg macro =====================================================================================
+    global last_fired_egg
+    current_time = int(time.time())
+    if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
+        last_fired_egg = current_time
+        # macro here using find_egg()
 
     # continue here
     print("macro loop")
@@ -248,6 +266,17 @@ def smooth_move_to(x, y, steps=50, duration=0.2):
         new_y = int(start_y + delta_y * i)
         pydirectinput.moveTo(new_x, new_y)
         time.sleep(delay)
+
+
+def find_egg():
+    for egg in selected_eggs:
+        try:
+            if pyautogui.locateOnScreen(f"egg/{egg}.png", confidence=0.8):
+                return True
+        except Exception as e:
+            print(f"egg {egg} was not found or the file is missing")
+            return False
+        return False
 
 while loop_counter == True:
     current_time = int(time.time())

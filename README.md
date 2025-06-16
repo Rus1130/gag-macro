@@ -15,11 +15,12 @@ Bad:
 ![bad selection](readme/bad_selection.png "Bad selection")
 Good:
 ![good selection](readme/good_selection.png "Good selection")
-Also: make sure that your last prior selected seed was carrot, before starting the macro
+Also: make sure that your last prior selected seed was carrot, and your last prior selected gear was watering can, before starting the macro
 # config
 The config file is located at `config.json`. It contains the following:
 * `buy_counts`: A dictionary of seeds and gears and their respective counts to buy.
 * `seeds`: A dictionary of seeds and whether to buy them or not.
 * `gears`: A dictionary of gears and whether to buy them or not.
-* `kill_key`: The key to press to stop the macro. Default is `F6`. It is not that reliable, so if it does not work, move the cursor to the top left corner of the screen and the program will terminate.
-* `shop_timer`: Time between checks of the seed and gear shops. Default is `300` seconds.
+* `kill_key`: The key to press and hold to stop the macro. Default is `F6`. It is not that reliable, so if it does not work, move the cursor to the top left corner of the screen and the program will terminate.
+* `shop_timer`: Time between checks of the seed and gear shops. Default is every `300` seconds since midnight.
+* `egg_timer`: Time between egg checks. Default is every `1800` seconds since midnight.
