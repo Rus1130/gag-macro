@@ -1,5 +1,6 @@
 {
     "kill_key": "F6",
+    "shop_timer": 300,
     "seeds": {
         "Carrot": false,
         "Strawberry": false,

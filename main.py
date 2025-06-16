@@ -4,7 +4,6 @@ import tkinter as tk
 import time
 import json
 import keyboard
-import os
 
 CONFIG = None
 pyautogui.MINIMUM_DURATION = 0.01
@@ -259,7 +258,7 @@ while loop_counter == True:
         launch_window()
         break
 
-    if current_time % 300 == 0 and current_time != last_fired: # 300
+    if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
         macro_loop()
         last_fired = current_time
 
