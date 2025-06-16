@@ -9,7 +9,7 @@ CONFIG = None
 pyautogui.MINIMUM_DURATION = 0.01
 
 # get the config file
-with open("config.jsonc", "r") as f:
+with open("config.json", "r") as f:
     CONFIG = json.loads(f.read().strip())
 
 # Helper function to build a checkbox group
@@ -112,7 +112,7 @@ def launch_window():
         CONFIG['seeds'] = {seed: seed in selected_seeds for seed in seed_list}
         CONFIG['gears'] = {gear: gear in selected_gears for gear in gear_list}
 
-        with open("config.jsonc", "w") as f:
+        with open("config.json", "w") as f:
             f.write(json.dumps(CONFIG, indent=4))
 
 
