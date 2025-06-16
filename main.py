@@ -139,9 +139,12 @@ def launch_window():
 loop_counter = False
 last_fired = -1
 last_fired_egg = -1
+trigger_egg_macro = False
 
 def macro_loop():
-    global seed_indexes, gear_indexes, gear_list, seed_list, egg_indexes, egg_list
+    global seed_indexes, gear_indexes, gear_list, seed_list, egg_indexes, egg_list, trigger_egg_macro, selected_eggs
+    print("macro loop")
+    
     # seed macro =====================================================================================
     pydirectinput.press("d", presses=3, interval=0.1)
     pydirectinput.press("enter")
@@ -160,7 +163,7 @@ def macro_loop():
         pydirectinput.press("s", presses=1, interval=0.05)
         time.sleep(0.5)
         buyCount = CONFIG['buy_counts'].get(seed_list[seed_indexes[seed_i]], 1)  # Default to 1 if not specified
-        pydirectinput.press("enter", presses=buyCount, interval=0.05)
+        pydirectinput.press("enter", presses=buyCount, interval=0.01)
         time.sleep(0.5)
         pydirectinput.press("w", presses=1, interval=0.05)
         time.sleep(0.5)
@@ -172,16 +175,7 @@ def macro_loop():
     pydirectinput.press("w")
     time.sleep(0.5)
     pydirectinput.press("enter")
-    time.sleep(1)
-    pydirectinput.press("w")
-    time.sleep(0.5)
-    pydirectinput.press("a")
-    time.sleep(0.5)
-    pydirectinput.press("enter")
-    time.sleep(0.5)
-    pydirectinput.press("a", presses=4, interval=0.1)
-    time.sleep(0.5)
-
+    time.sleep(2)
 
     # gear macro =====================================================================================
     pydirectinput.press("2")
@@ -207,6 +201,8 @@ def macro_loop():
     pydirectinput.click()
     time.sleep(2)
     pydirectinput.press("\\")
+    time.sleep(0.5)
+    pydirectinput.press("\\")
     time.sleep(3)
     pydirectinput.press("d", presses=3, interval=0.1)
     time.sleep(0.5)
@@ -221,7 +217,7 @@ def macro_loop():
         pydirectinput.press("s", presses=1, interval=0.05)
         time.sleep(0.5)
         buyCount = CONFIG['buy_counts'].get(gear_list[gear_indexes[gear_i]], 1)  # Default to 1 if not specified
-        pydirectinput.press("enter", presses=buyCount, interval=0.05)
+        pydirectinput.press("enter", presses=buyCount, interval=0.01)
         time.sleep(0.5)
         pydirectinput.press("w", presses=1, interval=0.05)
         time.sleep(0.5)
@@ -234,24 +230,54 @@ def macro_loop():
     time.sleep(0.5)
     pydirectinput.press("enter")
     time.sleep(1)
-    pydirectinput.press("w")
+    pydirectinput.press("\\")
     time.sleep(0.5)
-    pydirectinput.press("a")
+    pydirectinput.press("\\")
+    time.sleep(0.5)
+    pydirectinput.press("d", presses=4, interval=0.1)
     time.sleep(0.5)
     pydirectinput.press("enter")
     time.sleep(0.5)
     pydirectinput.press("a", presses=4, interval=0.1)
-    time.sleep(0.5)
 
-    # egg macro =====================================================================================
-    global last_fired_egg
-    current_time = int(time.time())
-    if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
-        last_fired_egg = current_time
-        # macro here using find_egg()
+    if trigger_egg_macro:
+        # egg macro =====================================================================================
+        time.sleep(2)
+        pydirectinput.press("2")
+        time.sleep(0.2)
+        pydirectinput.click()
+        time.sleep(0.5)
+        print('egg macro started')
 
-    # continue here
-    print("macro loop")
+        # get to the first egg from the gear shop
+        press_hold_key("s", 1.68)
+        buy_egg()
+        time.sleep(0.5)
+
+        # # # to the second egg
+        press_hold_key("s", 0.12)
+        buy_egg()
+        time.sleep(0.5)
+
+        # # # to the third egg
+        press_hold_key("s", 0.12)
+        buy_egg()
+        time.sleep(0.5)
+
+        trigger_egg_macro = False
+
+        pydirectinput.press("\\")
+        time.sleep(0.5)
+        pydirectinput.press("d", presses=4, interval=0.1)
+        time.sleep(0.5)
+        pydirectinput.press("enter")
+        time.sleep(0.5)
+        pydirectinput.press("a", presses=4, interval=0.1)
+
+def press_hold_key(key, dur):
+    pydirectinput.keyDown(key)
+    time.sleep(dur)
+    pydirectinput.keyUp(key)
 
 launch_window()
 
@@ -268,13 +294,32 @@ def smooth_move_to(x, y, steps=50, duration=0.2):
         time.sleep(delay)
 
 
+def buy_egg():
+    pydirectinput.press("e")
+    pydirectinput.press("\\")
+    time.sleep(0.5)
+    pydirectinput.press("d", presses=3, interval=0.1)
+    time.sleep(0.5)
+    pydirectinput.press("s")
+    time.sleep(0.5)
+
+    if find_egg() == True:
+        pydirectinput.press("enter")
+    else:
+        pydirectinput.press("d", presses=2, interval=0.05)
+        time.sleep(0.5)
+        pydirectinput.press("enter")
+
+    time.sleep(0.1)
+    pydirectinput.press("\\")
+
 def find_egg():
     for egg in selected_eggs:
         try:
             if pyautogui.locateOnScreen(f"egg/{egg}.png", confidence=0.8):
                 return True
-        except Exception as e:
-            print(f"egg {egg} was not found or the file is missing")
+        except:
+            print(f"egg {egg} was not found")
             return False
         return False
 
@@ -286,6 +331,10 @@ while loop_counter == True:
         loop_counter = False
         launch_window()
         break
+
+    if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
+        last_fired_egg = current_time
+        trigger_egg_macro = True
 
     if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
         macro_loop()

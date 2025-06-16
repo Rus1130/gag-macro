@@ -6,9 +6,9 @@
         "common": false,
         "uncommon": false,
         "rare": false,
-        "legendary": false,
-        "mythical": false,
-        "bug": false
+        "legendary": true,
+        "mythical": true,
+        "bug": true
     },
     "seeds": {
         "Carrot": false,
@@ -30,9 +30,9 @@
         "Mushroom": false,
         "Pepper": false,
         "Cacao": false,
-        "Beanstalk": false,
-        "Ember Lily": false,
-        "Sugar Apple": false
+        "Beanstalk": true,
+        "Ember Lily": true,
+        "Sugar Apple": true
     },
     "gears": {
         "Watering Can": false,
@@ -41,8 +41,8 @@
         "Basic Sprinkler": false,
         "Advanced Sprinkler": false,
         "Godly Sprinkler": false,
-        "Lightning Rod": false,
-        "Master Sprinkler": false,
+        "Lightning Rod": true,
+        "Master Sprinkler": true,
         "Cleaning Spray": false,
         "Favorite Tool": false,
         "Harvest Tool": false,
