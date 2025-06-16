@@ -6,8 +6,8 @@
         "common": false,
         "uncommon": false,
         "rare": false,
-        "legendary": true,
-        "mythical": true,
+        "legendary": false,
+        "mythical": false,
         "bug": true
     },
     "seeds": {
