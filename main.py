@@ -171,64 +171,64 @@ def macro_loop():
 
 
     # gear macro =====================================================================================
-    # pydirectinput.press("2")
-    # time.sleep(0.2)
-    # pydirectinput.click()
-    # time.sleep(0.5)
-    # pydirectinput.press("e")
-    # screen_width, screen_height = pyautogui.size()
-    # center_x = screen_width // 2
-    # center_y = screen_height // 2
+    pydirectinput.press("2")
+    time.sleep(0.2)
+    pydirectinput.click()
+    time.sleep(0.5)
+    pydirectinput.press("e")
+    screen_width, screen_height = pyautogui.size()
+    center_x = screen_width // 2
+    center_y = screen_height // 2
 
-    # pyautogui.moveTo(center_x, center_y, duration=0.1)
+    pyautogui.moveTo(center_x, center_y, duration=0.1)
 
-    # time.sleep(2)
+    time.sleep(2)
 
-    # weight = 0.1
-    # shift_x = int(center_x + (screen_width - center_x) * weight)
-    # shift_y = center_y  # keep same y
+    weight = 0.1
+    shift_x = int(center_x + (screen_width - center_x) * weight)
+    shift_y = center_y  # keep same y
 
-    # smooth_move_to(shift_x, shift_y, steps=10, duration=0.02)
-    # time.sleep(0.5)
-    # smooth_move_to(shift_x, shift_y-25, steps=10, duration=0.02)
-    # pydirectinput.click()
-    # time.sleep(2)
-    # pydirectinput.press("\\")
-    # time.sleep(4)
-    # pydirectinput.press("d", presses=3, interval=0.1)
-    # time.sleep(0.5)
-    # pydirectinput.press("s")
-    # # now move the mouse halfway between where it is and the right edge of the screen
-    # gear_i = 0
-    # while gear_i < len(gear_indexes):
-    #     pydirectinput.press("s", presses=gear_indexes[gear_i], interval=0.1)
-    #     time.sleep(0.5)
-    #     pydirectinput.press("enter", presses=1, interval=0.05)
-    #     time.sleep(0.5)
-    #     pydirectinput.press("s", presses=1, interval=0.05)
-    #     time.sleep(0.5)
-    #     buyCount = CONFIG['buy_counts'].get(gear_list[gear_indexes[gear_i]], 1)  # Default to 1 if not specified
-    #     pydirectinput.press("enter", presses=buyCount, interval=0.05)
-    #     time.sleep(0.5)
-    #     pydirectinput.press("w", presses=1, interval=0.05)
-    #     time.sleep(0.5)
-    #     pydirectinput.press("enter", presses=1, interval=0.05)
-    #     time.sleep(0.5)
-    #     pydirectinput.press("w", presses=gear_indexes[gear_i], interval=0.1)
-    #     gear_i += 1
+    smooth_move_to(shift_x, shift_y, steps=10, duration=0.02)
+    time.sleep(0.5)
+    smooth_move_to(shift_x, shift_y-25, steps=10, duration=0.02)
+    pydirectinput.click()
+    time.sleep(2)
+    pydirectinput.press("\\")
+    time.sleep(4)
+    pydirectinput.press("d", presses=3, interval=0.1)
+    time.sleep(0.5)
+    pydirectinput.press("s")
+    # now move the mouse halfway between where it is and the right edge of the screen
+    gear_i = 0
+    while gear_i < len(gear_indexes):
+        pydirectinput.press("s", presses=gear_indexes[gear_i], interval=0.1)
+        time.sleep(0.5)
+        pydirectinput.press("enter", presses=1, interval=0.05)
+        time.sleep(0.5)
+        pydirectinput.press("s", presses=1, interval=0.05)
+        time.sleep(0.5)
+        buyCount = CONFIG['buy_counts'].get(gear_list[gear_indexes[gear_i]], 1)  # Default to 1 if not specified
+        pydirectinput.press("enter", presses=buyCount, interval=0.05)
+        time.sleep(0.5)
+        pydirectinput.press("w", presses=1, interval=0.05)
+        time.sleep(0.5)
+        pydirectinput.press("enter", presses=1, interval=0.05)
+        time.sleep(0.5)
+        pydirectinput.press("w", presses=gear_indexes[gear_i], interval=0.1)
+        gear_i += 1
 
-    # pydirectinput.press("w")
-    # time.sleep(0.5)
-    # pydirectinput.press("enter")
-    # time.sleep(1)
-    # pydirectinput.press("w")
-    # time.sleep(0.5)
-    # pydirectinput.press("a")
-    # time.sleep(0.5)
-    # pydirectinput.press("enter")
-    # time.sleep(0.5)
-    # pydirectinput.press("a", presses=4, interval=0.1)
-    # time.sleep(0.5)
+    pydirectinput.press("w")
+    time.sleep(0.5)
+    pydirectinput.press("enter")
+    time.sleep(1)
+    pydirectinput.press("w")
+    time.sleep(0.5)
+    pydirectinput.press("a")
+    time.sleep(0.5)
+    pydirectinput.press("enter")
+    time.sleep(0.5)
+    pydirectinput.press("a", presses=4, interval=0.1)
+    time.sleep(0.5)
 
 
 
