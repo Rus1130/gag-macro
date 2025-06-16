@@ -22,3 +22,4 @@ The config file is located at `config.json`. It contains the following:
 * `seeds`: A dictionary of seeds and whether to buy them or not.
 * `gears`: A dictionary of gears and whether to buy them or not.
 * `kill_key`: The key to press to stop the macro. Default is `F6`. It is not that reliable, so if it does not work, move the cursor to the top left corner of the screen and the program will terminate.
+* `shop_timer`: Time between checks of the seed and gear shops. Default is `300` seconds.
