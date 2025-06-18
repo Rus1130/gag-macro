@@ -3,7 +3,7 @@
     "shop_timer": 300,
     "egg_timer": 1800,
     "eggs": {
-        "common": false,
+        "common": true,
         "uncommon": false,
         "rare": false,
         "legendary": false,
@@ -12,8 +12,8 @@
     },
     "seeds": {
         "Carrot": false,
-        "Strawberry": false,
-        "Blueberry": false,
+        "Strawberry": true,
+        "Blueberry": true,
         "Orange Tulip": false,
         "Tomato": false,
         "Corn": false,
@@ -23,16 +23,16 @@
         "Apple": false,
         "Bamboo": false,
         "Coconut": false,
-        "Cactus": false,
+        "Cactus": true,
         "Dragon Fruit": false,
         "Mango": false,
         "Grape": false,
         "Mushroom": false,
         "Pepper": false,
         "Cacao": false,
-        "Beanstalk": true,
-        "Ember Lily": true,
-        "Sugar Apple": true
+        "Beanstalk": false,
+        "Ember Lily": false,
+        "Sugar Apple": false
     },
     "gears": {
         "Watering Can": false,

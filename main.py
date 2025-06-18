@@ -12,6 +12,11 @@ pydirectinput.MINIMUM_DURATION = 0.01
 with open("config.json", "r") as f:
     CONFIG = json.loads(f.read().strip())
 
+def record_to_log(message, newline=False):
+    newline_prefix = "\n" if newline else ""
+    with open("log.txt", "a") as log_file:
+        log_file.write(f"{newline_prefix}[{time.strftime('%Y-%m-%d %H:%M:%S')}] - {message}\n")
+
 # Helper function to build a checkbox group
 def create_group(parent, column, title, features):
     # Group label
@@ -127,6 +132,7 @@ def launch_window():
         with open("config.json", "w") as f:
             f.write(json.dumps(CONFIG, indent=4))
 
+        record_to_log("Macro started ================================================================================", newline=True)
 
         loop_counter = True
 
@@ -143,32 +149,41 @@ trigger_egg_macro = False
 
 def macro_loop():
     global seed_indexes, gear_indexes, gear_list, seed_list, egg_indexes, egg_list, trigger_egg_macro, selected_eggs
-    print("macro loop")
-    
+
     # seed macro =====================================================================================
     pydirectinput.press("d", presses=3, interval=0.1)
     pydirectinput.press("enter")
     time.sleep(1)
     pydirectinput.press("e")
-    time.sleep(5)
+    time.sleep(3)
     pydirectinput.press("down")
+    record_to_log("Macro loop")
 
     # loop through the seed indexes and press them
     seed_i = 0
     while seed_i < len(seed_indexes):
         pydirectinput.press("s", presses=seed_indexes[seed_i], interval=0.1)
-        time.sleep(0.5)
+        time.sleep(0.2)
         pydirectinput.press("enter", presses=1, interval=0.05)
-        time.sleep(0.5)
+        time.sleep(0.2)
         pydirectinput.press("s", presses=1, interval=0.05)
-        time.sleep(0.5)
-        buyCount = CONFIG['buy_counts'].get(seed_list[seed_indexes[seed_i]], 1)  # Default to 1 if not specified
-        pydirectinput.press("enter", presses=buyCount, interval=0.01)
-        time.sleep(0.5)
+        time.sleep(0.2)
+
+        inStock = not find_image("img/no_stock.png")
+        seed = seed_list[seed_indexes[seed_i]];
+
+        if inStock:
+            record_to_log(f"Found {seed}, buying.")
+            buyCount = CONFIG['buy_counts'].get(seed, 1)  # Default to 1 if not specified
+            pydirectinput.press("enter", presses=buyCount, interval=0.05)
+            time.sleep(0.2)
+        else:
+            record_to_log(f"Seed {seed} not in stock.")
+
         pydirectinput.press("w", presses=1, interval=0.05)
-        time.sleep(0.5)
+        time.sleep(0.2)
         pydirectinput.press("enter", presses=1, interval=0.05)
-        time.sleep(0.5)
+        time.sleep(0.2)
         pydirectinput.press("w", presses=seed_indexes[seed_i], interval=0.1)
         seed_i += 1
 
@@ -208,6 +223,7 @@ def macro_loop():
     time.sleep(0.5)
     pydirectinput.press("s")
     # now move the mouse halfway between where it is and the right edge of the screen
+
     gear_i = 0
     while gear_i < len(gear_indexes):
         pydirectinput.press("s", presses=gear_indexes[gear_i], interval=0.1)
@@ -216,9 +232,18 @@ def macro_loop():
         time.sleep(0.5)
         pydirectinput.press("s", presses=1, interval=0.05)
         time.sleep(0.5)
-        buyCount = CONFIG['buy_counts'].get(gear_list[gear_indexes[gear_i]], 1)  # Default to 1 if not specified
-        pydirectinput.press("enter", presses=buyCount, interval=0.01)
-        time.sleep(0.5)
+
+        inStock = not find_image("img/no_stock.png")
+        gear = gear_list[gear_indexes[gear_i]]
+
+        if inStock:
+            record_to_log(f"Found {gear}, buying.")
+            buyCount = CONFIG['buy_counts'].get(gear_list[gear_indexes[gear_i]], 1)  # Default to 1 if not specified
+            pydirectinput.press("enter", presses=buyCount, interval=0.01)
+            time.sleep(0.5)
+        else:
+            record_to_log(f"Gear {gear} not in stock.")
+
         pydirectinput.press("w", presses=1, interval=0.05)
         time.sleep(0.5)
         pydirectinput.press("enter", presses=1, interval=0.05)
@@ -242,37 +267,49 @@ def macro_loop():
 
     if trigger_egg_macro:
         # egg macro =====================================================================================
+        record_to_log("Checking eggs...")
         time.sleep(2)
         pydirectinput.press("2")
         time.sleep(0.2)
         pydirectinput.click()
         time.sleep(0.5)
-        print('egg macro started')
 
         # get to the first egg from the gear shop
         press_hold_key("s", 1.68)
-        buy_egg()
+        egg1 = buy_egg()
+        if(egg1 == False):
+            record_to_log(f"egg 1 is not {selected_eggs}, skipping.")
+        else:
+            record_to_log(f"egg 1 is {egg1}, buying.")
         time.sleep(0.5)
 
-        # # # to the second egg
+        # to the second egg
         press_hold_key("s", 0.12)
-        buy_egg()
+        egg2 = buy_egg()
+        if(egg2 == False):
+            record_to_log(f"egg 2 is not {selected_eggs}, skipping.")
+        else:
+            record_to_log(f"egg 2 is {egg2}, buying.")
         time.sleep(0.5)
 
-        # # # to the third egg
+        # to the third egg
         press_hold_key("s", 0.12)
-        buy_egg()
+        egg3 = buy_egg()
+        if(egg3 == False):
+            record_to_log(f"egg 3 is not {selected_eggs}, skipping.")
+        else:
+            record_to_log(f"egg 3 is {egg3}, buying.")
         time.sleep(0.5)
 
         trigger_egg_macro = False
 
-        pydirectinput.press("\\")
-        time.sleep(0.5)
-        pydirectinput.press("d", presses=4, interval=0.1)
-        time.sleep(0.5)
-        pydirectinput.press("enter")
-        time.sleep(0.5)
-        pydirectinput.press("a", presses=4, interval=0.1)
+    pydirectinput.press("\\")
+    time.sleep(0.5)
+    pydirectinput.press("d", presses=4, interval=0.1)
+    time.sleep(0.5)
+    pydirectinput.press("enter")
+    time.sleep(0.5)
+    pydirectinput.press("a", presses=4, interval=0.1)
 
 def press_hold_key(key, dur):
     pydirectinput.keyDown(key)
@@ -293,34 +330,40 @@ def smooth_move_to(x, y, steps=50, duration=0.2):
         pydirectinput.moveTo(new_x, new_y)
         time.sleep(delay)
 
-
 def buy_egg():
     pydirectinput.press("e")
     pydirectinput.press("\\")
-    time.sleep(0.5)
+    time.sleep(0.3)
     pydirectinput.press("d", presses=3, interval=0.1)
-    time.sleep(0.5)
+    time.sleep(0.3)
     pydirectinput.press("s")
-    time.sleep(0.5)
+    time.sleep(0.3)
 
-    if find_egg() == True:
+    egg = find_egg()
+
+    if egg != False:
         pydirectinput.press("enter")
     else:
         pydirectinput.press("d", presses=2, interval=0.05)
-        time.sleep(0.5)
+        time.sleep(0.3)
         pydirectinput.press("enter")
 
     time.sleep(0.1)
     pydirectinput.press("\\")
 
+    return egg
+
 def find_egg():
     for egg in selected_eggs:
-        try:
-            if pyautogui.locateOnScreen(f"egg/{egg}.png", confidence=0.8):
-                return True
-        except:
-            print(f"egg {egg} was not found")
-            return False
+        if find_image(f"img/{egg}.png") == True:
+            return egg
+    return False
+    
+def find_image(path):
+    try:
+        if pyautogui.locateOnScreen(path, confidence=0.8):
+            return True
+    except:
         return False
 
 while loop_counter == True:

@@ -1,3 +1,5 @@
+**IMPORTANT!**
+You may NOT use a different font while using this macro. This is because this macro uses image recognition for certain tasks, and the font must be the same one used in the game.
 # How to use
 1. Make sure that your camera is positioned like so:
 ![alignment image](readme/alignment.png "Alignment")
