@@ -118,6 +118,10 @@ def launch_window():
         pyautogui.getWindowsWithTitle("Grow a Garden Macro")[0].close()
         pyautogui.getWindowsWithTitle("Roblox")[0].activate()
 
+        press_hold_key("i", 5)
+        time.sleep(0.5)
+        press_hold_key("o", 0.46)
+
         selected_seeds = [seed for seed, var in zip(seed_list, seeds_vars) if var.get()]
         selected_gears = [gear for gear, var in zip(gear_list, gear_vars) if var.get()]
         selected_eggs = [egg for egg, var in zip(egg_list, egg_vars) if var.get()]
@@ -213,16 +217,18 @@ def macro_loop():
     smooth_move_to(shift_x, shift_y, steps=10, duration=0.02)
     time.sleep(0.5)
     smooth_move_to(shift_x, shift_y-25, steps=10, duration=0.02)
+
     pydirectinput.click()
     time.sleep(2)
+
+    # why  the FUCK will it not work properly
     pydirectinput.press("\\")
-    time.sleep(0.5)
-    pydirectinput.press("\\")
-    time.sleep(3)
+
+    time.sleep(2)
+
     pydirectinput.press("d", presses=3, interval=0.1)
     time.sleep(0.5)
     pydirectinput.press("s")
-    # now move the mouse halfway between where it is and the right edge of the screen
 
     gear_i = 0
     while gear_i < len(gear_indexes):
@@ -257,13 +263,6 @@ def macro_loop():
     time.sleep(1)
     pydirectinput.press("\\")
     time.sleep(0.5)
-    pydirectinput.press("\\")
-    time.sleep(0.5)
-    pydirectinput.press("d", presses=4, interval=0.1)
-    time.sleep(0.5)
-    pydirectinput.press("enter")
-    time.sleep(0.5)
-    pydirectinput.press("a", presses=4, interval=0.1)
 
     if trigger_egg_macro:
         # egg macro =====================================================================================
@@ -311,9 +310,9 @@ def macro_loop():
     time.sleep(0.5)
     pydirectinput.press("a", presses=4, interval=0.1)
 
-def press_hold_key(key, dur):
+def press_hold_key(key, s):
     pydirectinput.keyDown(key)
-    time.sleep(dur)
+    time.sleep(s)
     pydirectinput.keyUp(key)
 
 launch_window()
@@ -359,34 +358,40 @@ def find_egg():
             return egg
     return False
     
-def find_image(path):
+def find_image(path, con=0.9):
     try:
-        if pyautogui.locateOnScreen(path, confidence=0.8):
+        if pyautogui.locateOnScreen(path, con):
             return True
     except:
         return False
+    
 
-while loop_counter == True:
-    current_time = int(time.time())
 
-    if keyboard.is_pressed(CONFIG['kill_key']):
-        print(f"{CONFIG['kill_key']} pressed — stopping macro.")
-        loop_counter = False
-        launch_window()
-        break
+trigger_egg_macro = False
+macro_loop()
 
-    if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
-        last_fired_egg = current_time
-        trigger_egg_macro = True
 
-    if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
-        macro_loop()
-        last_fired = current_time
+# while loop_counter == True:
+#     current_time = int(time.time())
 
-    if keyboard.is_pressed(CONFIG['kill_key']):
-        print(f"{CONFIG['kill_key']} pressed — stopping macro.")
-        loop_counter = False
-        launch_window()
-        break;
+#     if keyboard.is_pressed(CONFIG['kill_key']):
+#         print(f"{CONFIG['kill_key']} pressed — stopping macro.")
+#         loop_counter = False
+#         launch_window()
+#         break
 
-    time.sleep(0.1)
+#     # if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
+#     #     last_fired_egg = current_time
+#     #     trigger_egg_macro = True
+
+#     # if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
+#     #     macro_loop()
+#     #     last_fired = current_time
+
+#     if keyboard.is_pressed(CONFIG['kill_key']):
+#         print(f"{CONFIG['kill_key']} pressed — stopping macro.")
+#         loop_counter = False
+#         launch_window()
+#         break;
+
+#     time.sleep(0.1)
