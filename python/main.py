@@ -373,27 +373,27 @@ def find_image(path, con=0.9):
 trigger_egg_macro = True
 macro_loop()
 
-# while loop_counter == True:
-#     current_time = int(time.time())
+while loop_counter == True:
+    current_time = int(time.time())
 
-#     if keyboard.is_pressed(CONFIG['kill_key']):
-#         print(f"{CONFIG['kill_key']} pressed — stopping macro.")
-#         loop_counter = False
-#         launch_window()
-#         break
+    if keyboard.is_pressed(CONFIG['kill_key']):
+        print(f"{CONFIG['kill_key']} pressed — stopping macro.")
+        loop_counter = False
+        launch_window()
+        break
 
-#     # if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
-#     #     last_fired_egg = current_time
-#     #     trigger_egg_macro = True
+    if current_time % CONFIG['egg_timer'] == 0 and current_time != last_fired_egg:
+        last_fired_egg = current_time
+        trigger_egg_macro = True
 
-#     # if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
-#     #     macro_loop()
-#     #     last_fired = current_time
+    if current_time % CONFIG['shop_timer'] == 0 and current_time != last_fired:
+        macro_loop()
+        last_fired = current_time
 
-#     if keyboard.is_pressed(CONFIG['kill_key']):
-#         print(f"{CONFIG['kill_key']} pressed — stopping macro.")
-#         loop_counter = False
-#         launch_window()
-#         break;
+    if keyboard.is_pressed(CONFIG['kill_key']):
+        print(f"{CONFIG['kill_key']} pressed — stopping macro.")
+        loop_counter = False
+        launch_window()
+        break;
 
-#     time.sleep(0.1)
+    time.sleep(0.1)

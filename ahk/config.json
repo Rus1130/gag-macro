@@ -1,7 +1,8 @@
 {
     "kill_key": "F6",
-    "shop_timer": 300,
+    "shop_timer": 10,
     "egg_timer": 1800,
+    "grace": 5,
     "eggs": {
         "Common Egg": true,
         "Common Summer Egg": false,
