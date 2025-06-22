@@ -1,5 +1,6 @@
 #Requires AutoHotkey v2.0
 #Include ./lib/JSON.ahk
+#Include ./lib/OCR.ahk
 
 jsonFile := "config.json"
 logFile := "log.txt"
@@ -19,6 +20,7 @@ last_fired_egg := 0
 last_fired_shop := 0
 loop_counter := 0
 trigger_egg_macro := false
+do_check := false
 
 jsonText := FileRead(jsonFile)
 CONFIG := Jxon_Load(&jsonText)
@@ -41,7 +43,7 @@ seedIndexes := []
 gearIndexes := []
 chosenEggs := []
 
-JoinArr(arr, delim) {
+JoinArr(arr, delim := ",") {
     result := ""
     for i, item in arr {
         if (i > 1) {
@@ -50,6 +52,17 @@ JoinArr(arr, delim) {
         result .= item
     }
     return result
+}
+
+findDifferences(arr) {
+    diffs := []
+    for i, val in arr {
+        if i = 1
+            diffs.Push(val)  ; Keep the first value
+        else
+            diffs.Push(val - arr[i - 1])
+    }
+    return diffs
 }
 
 ; Create GroupBoxes
@@ -93,9 +106,12 @@ AddItemsToColumn(gui, label, items, x, startY) {
     }
 }
 
-Log(text) {
+Log(text, newline := 0) {
     global logFile
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+    if(newline) {
+        FileAppend("`n", logFile)
+    }
     FileAppend("`n[" timestamp "] "  text, logFile)
 }
 
@@ -105,17 +121,71 @@ HoldKey(key, sec) {
     Send("{" key " up}")
 }
 
+Press(key, num := 1, delay := 50) {
+    loop num {
+        Sleep(delay)
+        Send("{" key "}")
+    }
+}
+
+LeftClick(){
+    Click("left")
+}
+
+SmoothMove(toX, toY, steps := 50, delay := 5) {
+    MouseGetPos(&x, &y)
+    dx := (toX - x) / steps
+    dy := (toY - y) / steps
+
+    Loop steps {
+        x += dx
+        y += dy
+        MouseMove(x, y, 0)  ; instant per step, but appears smooth
+        Sleep(delay)
+    }
+}
+
 StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
+    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG, do_check
     if !macro_running {
         macro_running := true
         Sleep(CONFIG["grace"] * 1000)
         WinMinimize("Grow a Garden Macro")
         WinActivate("Roblox")
-        HoldKey("I", 5)
+        HoldKey("I", 10)
         HoldKey("O", 0.5)
-        Log("Macro started ================================================================================")
+        Press("\", 2)
+        LeftClick()
+        Sleep(100)
+        Press("\")
+
+        ; pre check to make sure that the shops are in the correct states
+        ; resetShopState()
+        ; Press("W")
+        ; Press("Enter")
+
+        ; Press("2")
+        ; LeftClick()
+        ; Sleep(500)
+        Press("E")
+
+        ; add 1/4th of the screen width to the x position
+        x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
+        y := A_ScreenHeight / 2
+
+        SmoothMove(x, y - 30)
+
+        Sleep(1000)
+        LeftClick()
+
+        ; move it half of the screen to the right, delta
+
+        Log("Macro started ================================================================================", 1)
         ; MsgBox("Seeds: " JoinArr(seedIndexes, ", ") "`nGears: " JoinArr(gearIndexes, ", ") "`nEggs: " JoinArr(chosenEggs, ", "))
+        
+        ; Macro()
+        
+        ; master macro timer
         SetTimer(Master, 10)
     }
 }
@@ -132,6 +202,7 @@ Kill(*) {
         macro_running := false
         SetTimer(Master, 0)
         MsgBox("Macro stopped.")
+        WinActivate("Grow a Garden Macro")
     }
 }
 
@@ -147,23 +218,65 @@ Master() {
     ; macro logic here
     current_time := A_TickCount
 
-    if Mod(current_time, CONFIG["egg_timer"] * 1000) = 0 && current_time != last_fired_egg {
+    if Mod(current_time, CONFIG["egg_timer"] * 1000) = 0 && current_time != last_fired_egg { ; default 1800
         last_fired_egg := current_time
         trigger_egg_macro := true
     }
 
-    if Mod(current_time, CONFIG["shop_timer"] * 1000) = 0 && current_time != last_fired_shop {
+    if Mod(current_time, CONFIG["shop_timer"] * 1000) = 0 && current_time != last_fired_shop { ; default 300
         last_fired_shop := current_time
         Macro()
     }
 }
 
-Macro() {
-    global CONFIG, trigger_egg_macro
+FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
+    xResult := 0
+    yResult := 0
 
+    imgFound := ImageSearch(&xResult, &yResult, x1, y1, x2, y2, "*10 " path)
+
+    return imgFound
+}
+
+FindText(text){
+
+}
+
+; resets shop state
+; makes sure that everything is collapsed, the last item was the top, etc
+resetShopState() {
+    Press("D", 3)
+    Sleep(100)
+    Press("Enter")
+    Sleep(100)
+    Press("E")
+    Sleep(2500)
+    Press("S", 7)
+    Sleep(100)
+    Press("\", 4)
+    Press("D", 3)
+    Sleep(100)
+    Press("S")
+    Press("Enter", 2)
+    Press("S", 7)
+    Press("Enter", 2)
+    Press("\", 2, 300)
+}
+
+Macro() {
+    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
     Log("Macro loop")
 
+    ; MsgBox(JoinArr(findDifferences(seedIndexes)))
+
+    ; macro logic here
+
+
     if trigger_egg_macro {
+        ; egg macro logic here
+
+        ; result := OCR.FromDesktop()
+        ; MsgBox "All text from desktop: `n" result.Text
         trigger_egg_macro := false
     }
 }
