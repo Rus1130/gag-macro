@@ -260,6 +260,7 @@ PreCheck() {
     LeftClick()
     Sleep(2000)
 
+    ; FIX THIS SHIT LATER
     ; reset ui nav
     Press("\", 2)
     LeftClick()
@@ -321,13 +322,13 @@ StartMacro(*) {
             }
         }
 
-        ; PreCheck()
+        PreCheck()
 
         Log("Macro started ================================================================================", 1)
         DebugLog("================================================================================", 1)
         ; MsgBox("Seeds: " JoinArr(seedIndexes, ", ") "`nGears: " JoinArr(gearIndexes, ", ") "`nEggs: " JoinArr(chosenEggs, ", "))
         
-        Macro()
+        ; Macro()
         
         ; master macro timer
         ; SetTimer(Master, 10)
@@ -381,52 +382,38 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
     return imgFound
 }
 
-FindText(text){
-
-}
-
-; trigger_egg_macro := true
 Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
     Log("Macro loop")
 
-    ; ; go to seed shop
-    ; Press("D", 3)
-    ; Press("Enter")
-    ; Press("E")
-    ; Sleep(2000)
-    ; Press("S")
+    ; go to seed shop
+    Press("D", 3)
+    Press("Enter")
+    Press("E")
+    Sleep(2000)
+    Press("S")
 
-    ; ; loop through seedIndexes to buy the right seeds
-    ; for i, seedIndex in seedIndexes {
-    ;     if(macro_running = false) {
-    ;         break
-    ;     }
-    ;     Press("S", seedIndex - 1)
-    ;     Press("Enter")
-    ;     Press("S")
-    ;     Sleep(1000)
+    ; loop through seedIndexes to buy the right seeds
+    for i, seedIndex in seedIndexes {
+        if(macro_running = false) {
+            break
+        }
+        Press("S", seedIndex - 1)
+        Press("Enter")
+        Press("S")
 
-    ;     fileName := "img/no_stock/" . StrReplace(StrLower(seedList[seedIndex]), " ", "_") . ".png"
-
-    ;     notInStock := FindImage(fileName)
-    ;     if(notInStock == 1) {
-    ;         Log("Seed " seedList[seedIndex] " not in stock.")
-    ;     } else {
-    ;         Log("Seed " seedList[seedIndex] " in stock. Buying...")
-    ;         Press("Enter", 30)
-    ;     }
+        Press("Enter", 30)
         
-    ;     Press("W")
-    ;     Press("Enter")
-    ;     Press("W", seedIndex - 1)
-    ; }
+        Press("W")
+        Press("Enter")
+        Press("W", seedIndex - 1)
+    }
 
-    ; Press("Enter", 2)
-    ; Sleep(300)
-    ; Press("W")
-    ; Sleep(300)
-    ; Press("Enter")
+    Press("Enter", 2)
+    Sleep(300)
+    Press("W")
+    Sleep(300)
+    Press("Enter")
     
     ; return to top of seed shop and exit
 
@@ -458,15 +445,8 @@ Macro() {
         Press("S", gearIndex - 1)
         Press("Enter")
         Press("S")
-        Sleep(1000)
 
-        notInStock := FindImage("img/no_stock.png")
-        if(notInStock == 0) {
-            Log("Gear " gearList[gearIndex] " not in stock.")
-        } else {
-            Log("Gear " gearList[gearIndex] " in stock. Buying...")
-            Press("Enter", 30)
-        }
+        Press("Enter", 30)
         
         Press("W")
         Press("Enter")
