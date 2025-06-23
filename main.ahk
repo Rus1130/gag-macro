@@ -2,12 +2,12 @@
 #Include ./lib/JSON.ahk
 #Include ./lib/OCR.ahk
 
-jsonFile := "config.json"
+settingsFile := "settings.ini"
 logFile := "log.txt"
 
 ; Read and parse JSON
-if !FileExist(jsonFile) {
-    MsgBox("config.json file not found.")
+if !FileExist(settingsFile) {
+    MsgBox("settings.ini file not found.")
     ExitApp
 }
 
@@ -22,11 +22,38 @@ loop_counter := 0
 trigger_egg_macro := false
 do_check := false
 
-jsonText := FileRead(jsonFile)
-CONFIG := Jxon_Load(&jsonText)
-
 window := Gui("+Resize", "Grow a Garden Macro")
 window.SetFont("s10")
+
+ReadEntireIni(filePath) {
+    result := Map()
+    sections := StrSplit(IniRead(filePath), "`n")
+
+    for i, section in sections {
+        iniSection := StrSplit(IniRead(filePath, section), "`n")
+
+        result[section] := Map()
+
+        for j, line in iniSection {
+            if (line != "") {
+                key := StrSplit(line, "=")[1]
+                value := StrSplit(line, "=")[2]
+
+                if(section = "Settings"){
+                    if(RegExMatch(value, "^-?\d+$")){
+                        value := value + 0
+                    }
+                }
+
+                result[section][key] := value
+            }
+        }
+    }
+
+    return result
+}
+
+CONFIG := ReadEntireIni(settingsFile)
 
 ; Positions and sizes for 3 columns
 x1 := 10, y1 := 0, w := 250
@@ -54,6 +81,18 @@ JoinArr(arr, delim := ",") {
     return result
 }
 
+JoinMap(m, delim := "`n") {
+    str := ""
+    for key, val in m {
+        if IsObject(val) ; Check if val is a Map (or Object with keys)
+            serializedVal := "{" . JoinMap(val, ", ") . "}"
+        else
+            serializedVal := val
+        str .= key "=" serializedVal delim
+    }
+    return RTrim(str, delim)  ; remove trailing delimiter
+}
+
 findDifferences(arr) {
     diffs := []
     for i, val in arr {
@@ -67,43 +106,38 @@ findDifferences(arr) {
 
 ; Create GroupBoxes
 ; Now populate each column — example for eggs:
-AddItemsToColumn(window, "Seeds", seedList, x1 + 10, y1 + 20)
-AddItemsToColumn(window, "Gears", gearList, x2 + 10, y1 + 20)
-AddItemsToColumn(window, "Eggs", eggList, x3 + 10, y1 + 20)
+seedCheckboxes := AddItemsToColumn(window, "Seeds", seedList, x1 + 10, y1 + 20)
+gearCheckboxes := AddItemsToColumn(window, "Gears", gearList, x2 + 10, y1 + 20)
+eggCheckboxes := AddItemsToColumn(window, "Eggs", eggList, x3 + 10, y1 + 20)
 
 AddItemsToColumn(gui, label, items, x, startY) {
+    global CONFIG
     y := startY
     i := 0
     
     labelVar := window.addText(" x" x " y" y " h40 w200", label)
     labelVar.SetFont("s16 Bold")
     y += 30
+
+    checkboxes := []
+
     for key, value in items {
         chk := window.Add("Checkbox", "x" x " y" y " w200", value)
 
-        chk.Value := CONFIG[StrLower(label)][value]
-
-        if(StrCompare(StrLower(label), "seeds") == 0) {
-            if(chk.Value == 1) {
-                seedIndexes.Push(i)
-            }
-        }
-
-        if(StrCompare(StrLower(label), "gears") == 0) {
-            if(chk.Value == 1) {
-                gearIndexes.Push(i)
-            }
-        }
-
-        if(StrCompare(StrLower(label), "eggs") == 0) {
-            if(chk.Value == 1) {
-                chosenEggs.Push(value)
-            }
-        }
+        value := CONFIG[label][value]
+        chk.Value := value = "true"
 
         i++
         y += 25
+
+        checkboxes.Push(chk)
     }
+
+    return checkboxes
+}
+
+settingsGet(section, key){
+
 }
 
 Log(text, newline := 0) {
@@ -123,7 +157,10 @@ HoldKey(key, sec) {
 
 Press(key, num := 1, delay := 50) {
     loop num {
-        Sleep(delay)
+        if(macro_running = false) {
+            break
+        }
+        Sleep(100)
         Send("{" key "}")
     }
 }
@@ -138,6 +175,9 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
     dy := (toY - y) / steps
 
     Loop steps {
+        if(macro_running = false) {
+            break
+        }
         x += dx
         y += dy
         MouseMove(x, y, 0)  ; instant per step, but appears smooth
@@ -145,40 +185,115 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
     }
 }
 
+ResetShopState() {
+    ; go down a lot to get out of the initial view box
+    Press("S", 7)
+    Sleep(100)
+
+    ; first 2 presses: go to top of box
+    ; second 2 presses: return to settings gear
+    Press("\", 4)
+
+    ; go back into the shop
+    Press("D", 3)
+    Sleep(100)
+    Press("S")
+
+    ; ??
+    Press("Enter", 2)
+    Press("S", 7)
+    Press("Enter", 2)
+    Press("\", 2, 300)
+}
+
+PreCheck() {
+    ; reset zoom
+    HoldKey("I", 10)
+    HoldKey("O", 0.5)
+
+    ; reset ui nav
+    Press("\", 2)
+    LeftClick()
+    Sleep(100)
+    Press("\")
+
+    ; navigate into the seed shop
+    Press("D", 3)
+    Sleep(100)
+    Press("Enter")
+    Sleep(100)
+    Press("E")
+    Sleep(2500)
+    Press("S")
+
+    ; reset seed shop state
+    ; makes sure that everything is collapsed, the last item was the top, etc
+    ResetShopState()
+
+    ; exit shop
+    Press("W")
+    Press("Enter")
+
+    ; go to gear shop
+    Press("2")
+    LeftClick()
+    Sleep(500)
+    Press("E")
+
+    ; actually enter the gear shop
+    x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
+    y := A_ScreenHeight / 2
+    SmoothMove(x, y - 50, 10, 2)
+
+    Sleep(2000)
+    Press("\", 2)
+    LeftClick()
+    Sleep(2000)
+    Press("\")
+    Press("D", 3)
+    Sleep(100)
+    Press("S")
+
+    ; reset gear shop state
+    ; makes sure that everything is collapsed, the last item was the top, etc
+    ResetShopState()
+    Press("W")
+    Press("Enter")
+
+    ; return to plot
+    Press("\", 2)
+    Press("D", 4)
+    Press("Enter")
+    Press("A", 4)
+}
+
 StartMacro(*) {
     global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG, do_check
     if !macro_running {
         macro_running := true
-        Sleep(CONFIG["grace"] * 1000)
+        Sleep(CONFIG['Settings']["grace"] * 1000)
         WinMinimize("Grow a Garden Macro")
         WinActivate("Roblox")
-        HoldKey("I", 10)
-        HoldKey("O", 0.5)
-        Press("\", 2)
-        LeftClick()
-        Sleep(100)
-        Press("\")
 
-        ; pre check to make sure that the shops are in the correct states
-        ; resetShopState()
-        ; Press("W")
-        ; Press("Enter")
+        for i, chk in seedCheckboxes {
+            if(chk.Value == 1) {
+                seedIndexes.Push(i)
+            }
+        }
 
-        ; Press("2")
-        ; LeftClick()
-        ; Sleep(500)
-        Press("E")
+        for i, chk in gearCheckboxes {
+            if(chk.Value == 1) {
+                gearIndexes.Push(i)
+            }
+        }
 
-        ; add 1/4th of the screen width to the x position
-        x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
-        y := A_ScreenHeight / 2
+        for i, chk in eggCheckboxes {
+            if(chk.Value == 1) {
+                chosenEggs.Push(eggList[i])
+            }
+        }
 
-        SmoothMove(x, y - 30)
-
-        Sleep(1000)
-        LeftClick()
-
-        ; move it half of the screen to the right, delta
+        ; PreCheck()
 
         Log("Macro started ================================================================================", 1)
         ; MsgBox("Seeds: " JoinArr(seedIndexes, ", ") "`nGears: " JoinArr(gearIndexes, ", ") "`nEggs: " JoinArr(chosenEggs, ", "))
@@ -186,7 +301,7 @@ StartMacro(*) {
         ; Macro()
         
         ; master macro timer
-        SetTimer(Master, 10)
+        ; SetTimer(Master, 10)
     }
 }
 
@@ -206,7 +321,7 @@ Kill(*) {
     }
 }
 
-Hotkey(CONFIG['kill_key'], Kill)
+Hotkey(CONFIG['Settings']['kill_key'], Kill)
 
 Master() {
     global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro
@@ -218,12 +333,12 @@ Master() {
     ; macro logic here
     current_time := A_TickCount
 
-    if Mod(current_time, CONFIG["egg_timer"] * 1000) = 0 && current_time != last_fired_egg { ; default 1800
+    if Mod(current_time, CONFIG['Settings']["egg_timer"] * 1000) = 0 && current_time != last_fired_egg { ; default 1800
         last_fired_egg := current_time
         trigger_egg_macro := true
     }
 
-    if Mod(current_time, CONFIG["shop_timer"] * 1000) = 0 && current_time != last_fired_shop { ; default 300
+    if Mod(current_time, CONFIG['Settings']["shop_timer"] * 1000) = 0 && current_time != last_fired_shop { ; default 300
         last_fired_shop := current_time
         Macro()
     }
@@ -234,7 +349,6 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
     yResult := 0
 
     imgFound := ImageSearch(&xResult, &yResult, x1, y1, x2, y2, "*10 " path)
-
     return imgFound
 }
 
@@ -242,41 +356,158 @@ FindText(text){
 
 }
 
-; resets shop state
-; makes sure that everything is collapsed, the last item was the top, etc
-resetShopState() {
-    Press("D", 3)
-    Sleep(100)
-    Press("Enter")
-    Sleep(100)
-    Press("E")
-    Sleep(2500)
-    Press("S", 7)
-    Sleep(100)
-    Press("\", 4)
-    Press("D", 3)
-    Sleep(100)
-    Press("S")
-    Press("Enter", 2)
-    Press("S", 7)
-    Press("Enter", 2)
-    Press("\", 2, 300)
-}
-
+; trigger_egg_macro := true
 Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
     Log("Macro loop")
 
-    ; MsgBox(JoinArr(findDifferences(seedIndexes)))
+    ; go to seed shop
+    Press("D", 3)
+    Press("Enter")
+    Press("E")
+    Sleep(2000)
+    Press("S")
 
-    ; macro logic here
+    ; loop through seedIndexes to buy the right seeds
+    seedIndexes := findDifferences(seedIndexes)
+    seedReturn := 0
+    for i, seedIndex in seedIndexes {
+        Press("S", seedIndex - 1)
+        Press("Enter")
+        Press("S")
+        Press("Enter", 30)
+        Press("W")
+        Press("Enter")
+
+        seedReturn += seedIndex
+    }
+    
+    ; return to top of seed shop and exit
+    Press("W", seedReturn - 1)
+    Press("W")
+    Press("Enter")
+
+    ; go to gear shop
+    Sleep(500)
+    Press("2")
+    LeftClick()
+    Sleep(500)
+    Press("E")
+
+    ; enter gear shop
+    x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
+    y := A_ScreenHeight / 2
+    SmoothMove(x, y - 50, 10, 2)
+    Sleep(3000)
+    LeftClick()
+    Sleep(2000)
+    Press("\", 2)
+    LeftClick()
+    Press("\")
+    Press("D", 3)
+    Press("S")
+
+    ; loop through gearIndexes to buy the right gears
+    gearIndexes := findDifferences(gearIndexes)
+    gearReturn := 0
+    for i, gearIndex in gearIndexes {
+        Press("S", gearIndex - 1)
+        Press("Enter")
+        Press("S")
+        Press("Enter", 30)
+        Press("W")
+        Press("Enter")
+
+        gearReturn += gearIndex
+    }
+    ; return to top of gear shop and exit
+    Press("W", gearReturn - 1)
+    Press("W")
+    Press("Enter")
 
 
     if trigger_egg_macro {
-        ; egg macro logic here
+        ; egg 1
+        HoldKey("S", 0.9)
+        Press("E")
+        Sleep(500)
+        egg1Text := OCR.FromDesktop().Text
+        buyEgg1 := false
+        for i, egg in chosenEggs {
+            if (InStr(egg1Text, "Purchase " egg)) {
+                buyEgg1 := true
+                break
+            }
+        }
+        Press("\")
+        Press("D", 3)
+        Press("S")
+
+        if(buyEgg1) {
+            Press("Enter")
+        } else {
+            Press("D", 2)
+            Press("Enter")
+        }
+        Press("\")
+
+
+        ; egg 2
+        HoldKey("S", 0.2)
+        Press("E")
+        Sleep(500)
+        egg2Text := OCR.FromDesktop().Text
+        buyEgg2 := false
+        for i, egg in chosenEggs {
+            if (InStr(egg2Text, "Purchase " egg)) {
+                buyEgg2 := true
+                break
+            }
+        }
+        Press("\")
+        Press("D", 3)
+        Press("S")
+
+        if(buyEgg2) {
+            Press("Enter")
+        } else {
+            Press("D", 2)
+            Press("Enter")
+        }
+        Press("\")
+
+        ; egg 3
+        HoldKey("S", 0.2)
+        Press("E")
+        Sleep(500)
+        egg3Text := OCR.FromDesktop().Text
+        buyEgg3 := false
+        for i, egg in chosenEggs {
+            if (InStr(egg3Text, "Purchase " egg)) {
+                buyEgg3 := true
+                break
+            }
+        }
+        Press("\")
+        Press("D", 3)
+        Press("S")
+        if(buyEgg3) {
+            Press("Enter")
+        } else {
+            Press("D", 2)
+            Press("Enter")
+        }
+
 
         ; result := OCR.FromDesktop()
         ; MsgBox "All text from desktop: `n" result.Text
         trigger_egg_macro := false
     }
+
+    Press("\", 2)
+    LeftClick()
+    Press("\")
+    Press("D", 4)
+    Press("Enter")
+    Press("A", 4)
 }

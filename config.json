@@ -12,21 +12,21 @@
         "Bug Egg": true
     },
     "seeds": {
-        "Carrot": false,
+        "Carrot": true,
         "Strawberry": false,
         "Blueberry": false,
         "Tomato": false,
         "Cauliflower": false,
         "Watermelon": false,
-        "Green Apple": true,
-        "Avocado": true,
+        "Green Apple": false,
+        "Avocado": false,
         "Banana": false,
         "Pineapple": false,
         "Kiwi": false,
         "Bell Pepper": false,
         "Prickly Pear": false,
         "Loquat": false,
-        "Feijoa": true,
+        "Feijoa": false,
         "Sugar Apple": false
     },
     "gears": {
