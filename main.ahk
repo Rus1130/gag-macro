@@ -53,6 +53,10 @@ ReadEntireIni(filePath) {
     return result
 }
 
+SetSetting(section, key, value) {
+    global settingsFile
+    IniWrite(value, settingsFile, section, key)
+}
 CONFIG := ReadEntireIni(settingsFile)
 
 ; Positions and sizes for 3 columns
@@ -277,18 +281,21 @@ StartMacro(*) {
 
         for i, chk in seedCheckboxes {
             if(chk.Value == 1) {
+                SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
                 seedIndexes.Push(i)
             }
         }
 
         for i, chk in gearCheckboxes {
             if(chk.Value == 1) {
+                SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
                 gearIndexes.Push(i)
             }
         }
 
         for i, chk in eggCheckboxes {
             if(chk.Value == 1) {
+                SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
                 chosenEggs.Push(eggList[i])
             }
         }
