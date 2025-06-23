@@ -1,0 +1,9 @@
+
+
+[2025-06-23 19:28:36] (String) ================================================================================
+[2025-06-23 19:28:43] (String) img/no_stock/carrot.png 0
+[2025-06-23 19:28:50] (String) img/no_stock/strawberry.png 0
+[2025-06-23 19:28:56] (String) img/no_stock/blueberry.png 0
+[2025-06-23 19:29:04] (String) img/no_stock/tomato.png 0
+[2025-06-23 19:29:09] (String) img/no_stock/green_apple.png 1
+[2025-06-23 19:29:14] (String) img/no_stock/pineapple.png 1

@@ -1,5 +1,4 @@
 #Requires AutoHotkey v2.0
-#Include ./lib/JSON.ahk
 #Include ./lib/OCR.ahk
 
 settingsFile := "settings.ini"
@@ -140,10 +139,6 @@ AddItemsToColumn(gui, label, items, x, startY) {
     return checkboxes
 }
 
-settingsGet(section, key){
-
-}
-
 Log(text, newline := 0) {
     global logFile
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
@@ -151,6 +146,27 @@ Log(text, newline := 0) {
         FileAppend("`n", logFile)
     }
     FileAppend("`n[" timestamp "] "  text, logFile)
+}
+
+DebugLog(text, newLine := 0){
+    global logFile
+    timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
+    if(newLine) {
+        FileAppend("`n", "debug_log.txt")
+    }
+
+    if Type(text) == "Integer" {
+        text := "(Integer) " text
+    } else if Type(text) == "Float" {
+        text := "(Float) " text
+    } else if Type(text) == "String" {
+        text := "(String) " text
+    } else if Type(text) == "Object" {
+        text := "(Map) " JoinMap(text)
+    } else if Type(text) == "Array" {
+        text := "[" JoinArr(text) "]"
+    }
+    FileAppend("`n[" timestamp "] "  text, "debug_log.txt")
 }
 
 HoldKey(key, sec) {
@@ -161,11 +177,14 @@ HoldKey(key, sec) {
 
 Press(key, num := 1, delay := 50) {
     loop num {
-        if(macro_running = false) {
+        if(macro_running == false) {
             break
         }
-        Sleep(100)
+        Sleep(delay)
         Send("{" key "}")
+        if(macro_running == false) {
+            break
+        }
     }
 }
 
@@ -189,27 +208,6 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
     }
 }
 
-ResetShopState() {
-    ; go down a lot to get out of the initial view box
-    Press("S", 7)
-    Sleep(100)
-
-    ; first 2 presses: go to top of box
-    ; second 2 presses: return to settings gear
-    Press("\", 4)
-
-    ; go back into the shop
-    Press("D", 3)
-    Sleep(100)
-    Press("S")
-
-    ; ??
-    Press("Enter", 2)
-    Press("S", 7)
-    Press("Enter", 2)
-    Press("\", 2, 300)
-}
-
 PreCheck() {
     ; reset zoom
     HoldKey("I", 10)
@@ -230,9 +228,19 @@ PreCheck() {
     Sleep(2500)
     Press("S")
 
-    ; reset seed shop state
-    ; makes sure that everything is collapsed, the last item was the top, etc
-    ResetShopState()
+    ; first 2 presses: go to top of box
+    ; second 2 presses: return to settings gear
+    Press("\", 4)
+
+    ; go back into the shop
+    Press("D", 3)
+    Sleep(100)
+    Press("S")
+    Sleep(500)
+    carrotCheck := FindImage("img/carrot_check.png")
+    if(carrotCheck == 1){
+        Press("Enter")
+    }
 
     ; exit shop
     Press("W")
@@ -247,20 +255,33 @@ PreCheck() {
     ; actually enter the gear shop
     x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
     y := A_ScreenHeight / 2
-    SmoothMove(x, y - 50, 10, 2)
-
+    SmoothMove(x, y - 60, 10, 2)
     Sleep(2000)
-    Press("\", 2)
     LeftClick()
     Sleep(2000)
+
+    ; reset ui nav
+    Press("\", 2)
+    LeftClick()
     Press("\")
+
+    ; go back into the shop
+    Sleep(100)
     Press("D", 3)
     Sleep(100)
     Press("S")
+    Sleep(100)
+
+    ; reset dropdown
+    Press("Enter", 2)
+    Sleep(500)
+    wateringCanCheck := FindImage("img/watering_can_check.png")
+    if(wateringCanCheck == 1){
+        Press("Enter")
+    }
 
     ; reset gear shop state
     ; makes sure that everything is collapsed, the last item was the top, etc
-    ResetShopState()
     Press("W")
     Press("Enter")
 
@@ -303,9 +324,10 @@ StartMacro(*) {
         ; PreCheck()
 
         Log("Macro started ================================================================================", 1)
+        DebugLog("================================================================================", 1)
         ; MsgBox("Seeds: " JoinArr(seedIndexes, ", ") "`nGears: " JoinArr(gearIndexes, ", ") "`nEggs: " JoinArr(chosenEggs, ", "))
         
-        ; Macro()
+        Macro()
         
         ; master macro timer
         ; SetTimer(Master, 10)
@@ -355,7 +377,7 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
     xResult := 0
     yResult := 0
 
-    imgFound := ImageSearch(&xResult, &yResult, x1, y1, x2, y2, "*10 " path)
+    imgFound := ImageSearch(&xResult, &yResult, x1, y1, x2, y2, "*TransBlack *30 " path)
     return imgFound
 }
 
@@ -368,31 +390,45 @@ Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
     Log("Macro loop")
 
-    ; go to seed shop
-    Press("D", 3)
-    Press("Enter")
-    Press("E")
-    Sleep(2000)
-    Press("S")
+    ; ; go to seed shop
+    ; Press("D", 3)
+    ; Press("Enter")
+    ; Press("E")
+    ; Sleep(2000)
+    ; Press("S")
 
-    ; loop through seedIndexes to buy the right seeds
-    seedIndexes := findDifferences(seedIndexes)
-    seedReturn := 0
-    for i, seedIndex in seedIndexes {
-        Press("S", seedIndex - 1)
-        Press("Enter")
-        Press("S")
-        Press("Enter", 30)
-        Press("W")
-        Press("Enter")
+    ; ; loop through seedIndexes to buy the right seeds
+    ; for i, seedIndex in seedIndexes {
+    ;     if(macro_running = false) {
+    ;         break
+    ;     }
+    ;     Press("S", seedIndex - 1)
+    ;     Press("Enter")
+    ;     Press("S")
+    ;     Sleep(1000)
 
-        seedReturn += seedIndex
-    }
+    ;     fileName := "img/no_stock/" . StrReplace(StrLower(seedList[seedIndex]), " ", "_") . ".png"
+
+    ;     notInStock := FindImage(fileName)
+    ;     if(notInStock == 1) {
+    ;         Log("Seed " seedList[seedIndex] " not in stock.")
+    ;     } else {
+    ;         Log("Seed " seedList[seedIndex] " in stock. Buying...")
+    ;         Press("Enter", 30)
+    ;     }
+        
+    ;     Press("W")
+    ;     Press("Enter")
+    ;     Press("W", seedIndex - 1)
+    ; }
+
+    ; Press("Enter", 2)
+    ; Sleep(300)
+    ; Press("W")
+    ; Sleep(300)
+    ; Press("Enter")
     
     ; return to top of seed shop and exit
-    Press("W", seedReturn - 1)
-    Press("W")
-    Press("Enter")
 
     ; go to gear shop
     Sleep(500)
@@ -414,21 +450,30 @@ Macro() {
     Press("D", 3)
     Press("S")
 
-    ; loop through gearIndexes to buy the right gears
-    gearIndexes := findDifferences(gearIndexes)
-    gearReturn := 0
+    ; buy gears
     for i, gearIndex in gearIndexes {
+        if(macro_running = false) {
+            break
+        }
         Press("S", gearIndex - 1)
         Press("Enter")
         Press("S")
-        Press("Enter", 30)
+        Sleep(1000)
+
+        notInStock := FindImage("img/no_stock.png")
+        if(notInStock == 0) {
+            Log("Gear " gearList[gearIndex] " not in stock.")
+        } else {
+            Log("Gear " gearList[gearIndex] " in stock. Buying...")
+            Press("Enter", 30)
+        }
+        
         Press("W")
         Press("Enter")
-
-        gearReturn += gearIndex
+        Press("W", gearIndex - 1)
     }
+
     ; return to top of gear shop and exit
-    Press("W", gearReturn - 1)
     Press("W")
     Press("Enter")
 
@@ -511,10 +556,10 @@ Macro() {
         trigger_egg_macro := false
     }
 
-    Press("\", 2)
-    LeftClick()
-    Press("\")
-    Press("D", 4)
-    Press("Enter")
-    Press("A", 4)
+    ; Press("\", 2)
+    ; LeftClick()
+    ; Press("\")
+    ; Press("D", 4)
+    ; Press("Enter")
+    ; Press("A", 4)
 }
