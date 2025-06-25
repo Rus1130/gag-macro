@@ -2,16 +2,11 @@
 #Include ./lib/OCR.ahk
 
 settingsFile := "settings.ini"
-logFile := "log.txt"
 
 ; Read and parse JSON
 if !FileExist(settingsFile) {
     MsgBox("settings.ini file not found.")
     ExitApp
-}
-
-if !FileExist(logFile) {
-    FileAppend("", logFile)
 }
 
 macro_running := false
@@ -139,17 +134,7 @@ AddItemsToColumn(gui, label, items, x, startY) {
     return checkboxes
 }
 
-Log(text, newline := 0) {
-    global logFile
-    timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
-    if(newline) {
-        FileAppend("`n", logFile)
-    }
-    FileAppend("`n[" timestamp "] "  text, logFile)
-}
-
 DebugLog(text, newLine := 0){
-    global logFile
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
     if(newLine) {
         FileAppend("`n", "debug_log.txt")
@@ -188,6 +173,13 @@ Press(key, num := 1, delay := 50) {
     }
 }
 
+SetToolTip(text) {
+    global CONFIG
+    if(CONFIG['Settings']["show_tooltip"] = "true") {
+        ToolTip(text)
+    }
+}
+
 LeftClick(){
     Click("left")
 }
@@ -210,16 +202,21 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
 
 PreCheck() {
     ; reset zoom
+    SetToolTip("Starting pre-check...")
+    Sleep(1000)
+    SetToolTip("Resetting zoom")
     HoldKey("I", 10)
     HoldKey("O", 0.5)
 
     ; reset ui nav
+    SetToolTip("Resetting UI navigation")
     Press("\", 2)
     LeftClick()
     Sleep(100)
     Press("\")
 
     ; navigate into the seed shop
+    SetToolTip("Navigating to seed shop")
     Press("D", 3)
     Sleep(100)
     Press("Enter")
@@ -230,29 +227,37 @@ PreCheck() {
 
     ; first 2 presses: go to top of box
     ; second 2 presses: return to settings gear
+    SetToolTip("Resetting seed shop state")
     Press("\", 4)
 
     ; go back into the shop
+    SetToolTip("Enter seed shop")
     Press("D", 3)
     Sleep(100)
     Press("S")
     Sleep(500)
+
+    ; reset dropdown
+    SetToolTip("Resetting carrot dropdown")
     carrotCheck := FindImage("img/carrot_check.png")
     if(carrotCheck == 1){
         Press("Enter")
     }
 
     ; exit shop
+    SetToolTip("Exiting seed shop")
     Press("W")
     Press("Enter")
 
     ; go to gear shop
+    SetToolTip("Navigating to gear shop")
     Press("2")
     LeftClick()
     Sleep(500)
     Press("E")
 
     ; actually enter the gear shop
+    SetToolTip("Entering gear shop")
     x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
     y := A_ScreenHeight / 2
     SmoothMove(x, y - 60, 10, 2)
@@ -260,13 +265,14 @@ PreCheck() {
     LeftClick()
     Sleep(2000)
 
-    ; FIX THIS SHIT LATER
     ; reset ui nav
+    SetToolTip("Resetting gear shop state")
     Press("\", 2)
     LeftClick()
     Press("\")
 
     ; go back into the shop
+    SetToolTip("Re-entering gear shop")
     Sleep(100)
     Press("D", 3)
     Sleep(100)
@@ -274,6 +280,7 @@ PreCheck() {
     Sleep(100)
 
     ; reset dropdown
+    SetToolTip("Resetting watering can dropdown")
     Press("Enter", 2)
     Sleep(500)
     wateringCanCheck := FindImage("img/watering_can_check.png")
@@ -281,16 +288,20 @@ PreCheck() {
         Press("Enter")
     }
 
-    ; reset gear shop state
-    ; makes sure that everything is collapsed, the last item was the top, etc
+    ; exit gear shop
+    SetToolTip("Exit gear shop")
     Press("W")
     Press("Enter")
 
     ; return to plot
+    SetToolTip("Returning to plot")
     Press("\", 2)
     Press("D", 4)
     Press("Enter")
     Press("A", 4)
+    SetToolTip("Pre-check complete")
+    Sleep(1000)
+    SetToolTip("")
 }
 
 StartMacro(*) {
@@ -322,16 +333,10 @@ StartMacro(*) {
             }
         }
 
-        PreCheck()
+        ; PreCheck()
 
-        Log("Macro started ================================================================================", 1)
-        DebugLog("================================================================================", 1)
-        ; MsgBox("Seeds: " JoinArr(seedIndexes, ", ") "`nGears: " JoinArr(gearIndexes, ", ") "`nEggs: " JoinArr(chosenEggs, ", "))
-        
-        ; Macro()
-        
         ; master macro timer
-        ; SetTimer(Master, 10)
+        SetTimer(Master, 100)
     }
 }
 
@@ -353,22 +358,72 @@ Kill(*) {
 
 Hotkey(CONFIG['Settings']['kill_key'], Kill)
 
+; getMsUntilNextInterval(interval) {
+;     now := DateAdd(A_Now, 0, "Seconds")  ; local time
+;     currentHour := Integer(FormatTime(now, "H"))
+;     currentMin := Integer(FormatTime(now, "m"))
+;     currentSec := Integer(FormatTime(now, "s"))
+
+;     if (currentMin < interval) {
+;         targetMin := interval
+;         targetHour := currentHour
+;     } else {
+;         targetMin := 0
+;         targetHour := currentHour + 1
+;         if (targetHour >= 24)
+;             targetHour := 0
+;     }
+
+;     today := FormatTime(now, "yyyyMMdd")
+;     targetTimeStr := Format("{}{:02}{:02}00", today, targetHour, targetMin)
+
+;     nowMs := getUnixTimeStamp() * 1000  ; convert seconds to ms
+
+;     ; Convert targetTimeStr (local time) to Unix timestamp seconds first
+;     targetDateTime := DateAdd(targetTimeStr, 0, "Seconds")
+;     targetUtc := DateAdd(targetDateTime, -DateDiff(targetDateTime, DateAdd(targetDateTime, 0, "UTC"), "Seconds"), "Seconds")
+;     targetMs := DateDiff(targetUtc, "19700101000000", "Milliseconds")
+
+;     deltaMs := targetMs - nowMs
+
+;     if (deltaMs < 0)
+;         deltaMs += 24 * 60 * 60 * 1000  ; add 24 hours in ms
+
+;     return deltaMs
+; }
+
+getUnixTimeStamp() {
+    epoch := "19700101000000"
+    local_diff := DateDiff(A_Now, epoch, "Seconds")
+    utc_offset_seconds := DateDiff(A_Now, A_NowUTC, "Seconds")
+    unix_timestamp := local_diff - utc_offset_seconds
+    return unix_timestamp
+}
+
 Master() {
     global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro
+
+    shopInterval := CONFIG['Settings']["shop_timer"]
+    eggInterval := CONFIG['Settings']["egg_timer"]
+
+    ; macro logic here
+    current_time := A_TickCount
+    nextShopCheck := Mod(getUnixTimeStamp(), shopInterval)
+    nextEggCheck := Mod(getUnixTimeStamp(), eggInterval)
+
+    SetToolTip("Next shop check in " (shopInterval - nextShopCheck) "s`nNext egg check in " (eggInterval - nextEggCheck) "s")
+
     if !macro_running {
         SetTimer(Master, 0)
         return
     }
 
-    ; macro logic here
-    current_time := A_TickCount
-
-    if Mod(current_time, CONFIG['Settings']["egg_timer"] * 1000) = 0 && current_time != last_fired_egg { ; default 1800
+    if nextEggCheck = 0 && current_time != last_fired_egg { ; default 1800
         last_fired_egg := current_time
         trigger_egg_macro := true
     }
 
-    if Mod(current_time, CONFIG['Settings']["shop_timer"] * 1000) = 0 && current_time != last_fired_shop { ; default 300
+    if nextShopCheck = 0 && current_time != last_fired_shop { ; default 300
         last_fired_shop := current_time
         Macro()
     }
@@ -384,7 +439,6 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
 
 Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
-    Log("Macro loop")
 
     ; go to seed shop
     Press("D", 3)
