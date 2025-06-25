@@ -14,7 +14,7 @@ last_fired_egg := 0
 last_fired_shop := 0
 loop_counter := 0
 trigger_egg_macro := false
-do_check := false
+show_timestamp_tooltip := true
 
 window := Gui("+Resize", "Grow a Garden Macro")
 window.SetFont("s10")
@@ -161,10 +161,18 @@ HoldKey(key, sec) {
 }
 
 Press(key, num := 1, delay := 50) {
+    activeWindow := WinGetTitle("A")
+    if(activeWindow != "Roblox" && activeWindow != "Grow a Garden Macro") {
+        timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
+        MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`nTime of termination: " timestamp)
+        ExitApp
+        return
+    }
     loop num {
         if(macro_running == false) {
             break
         }
+        ; get the current focused window
         Sleep(delay)
         Send("{" key "}")
         if(macro_running == false) {
@@ -175,7 +183,10 @@ Press(key, num := 1, delay := 50) {
 
 SetToolTip(text) {
     global CONFIG
-    if(CONFIG['Settings']["show_tooltip"] = "true") {
+    if(!macro_running) {
+        ToolTip("")  ; Clear tooltip if macro is not running
+        return
+    } else if(CONFIG['Settings']["show_tooltips"] = "true") {
         ToolTip(text)
     }
 }
@@ -211,8 +222,8 @@ PreCheck() {
     ; reset ui nav
     SetToolTip("Resetting UI navigation")
     Press("\", 2)
-    LeftClick()
     Sleep(100)
+    LeftClick()
     Press("\")
 
     ; navigate into the seed shop
@@ -302,10 +313,12 @@ PreCheck() {
     SetToolTip("Pre-check complete")
     Sleep(1000)
     SetToolTip("")
+
+    SetTimer(Master, 100)
 }
 
 StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG, do_check
+    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
     if !macro_running {
         macro_running := true
         Sleep(CONFIG['Settings']["grace"] * 1000)
@@ -313,30 +326,27 @@ StartMacro(*) {
         WinActivate("Roblox")
 
         for i, chk in seedCheckboxes {
+            SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
-                SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
                 seedIndexes.Push(i)
             }
         }
 
         for i, chk in gearCheckboxes {
+            SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
-                SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
                 gearIndexes.Push(i)
             }
         }
 
         for i, chk in eggCheckboxes {
+            SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
-                SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
                 chosenEggs.Push(eggList[i])
             }
         }
 
-        ; PreCheck()
-
-        ; master macro timer
-        SetTimer(Master, 100)
+        PreCheck()
     }
 }
 
@@ -352,45 +362,12 @@ Kill(*) {
         macro_running := false
         SetTimer(Master, 0)
         MsgBox("Macro stopped.")
+        SetToolTip("")
         WinActivate("Grow a Garden Macro")
     }
 }
 
 Hotkey(CONFIG['Settings']['kill_key'], Kill)
-
-; getMsUntilNextInterval(interval) {
-;     now := DateAdd(A_Now, 0, "Seconds")  ; local time
-;     currentHour := Integer(FormatTime(now, "H"))
-;     currentMin := Integer(FormatTime(now, "m"))
-;     currentSec := Integer(FormatTime(now, "s"))
-
-;     if (currentMin < interval) {
-;         targetMin := interval
-;         targetHour := currentHour
-;     } else {
-;         targetMin := 0
-;         targetHour := currentHour + 1
-;         if (targetHour >= 24)
-;             targetHour := 0
-;     }
-
-;     today := FormatTime(now, "yyyyMMdd")
-;     targetTimeStr := Format("{}{:02}{:02}00", today, targetHour, targetMin)
-
-;     nowMs := getUnixTimeStamp() * 1000  ; convert seconds to ms
-
-;     ; Convert targetTimeStr (local time) to Unix timestamp seconds first
-;     targetDateTime := DateAdd(targetTimeStr, 0, "Seconds")
-;     targetUtc := DateAdd(targetDateTime, -DateDiff(targetDateTime, DateAdd(targetDateTime, 0, "UTC"), "Seconds"), "Seconds")
-;     targetMs := DateDiff(targetUtc, "19700101000000", "Milliseconds")
-
-;     deltaMs := targetMs - nowMs
-
-;     if (deltaMs < 0)
-;         deltaMs += 24 * 60 * 60 * 1000  ; add 24 hours in ms
-
-;     return deltaMs
-; }
 
 getUnixTimeStamp() {
     epoch := "19700101000000"
@@ -401,29 +378,34 @@ getUnixTimeStamp() {
 }
 
 Master() {
-    global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro
+    global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro, show_timestamp_tooltip
 
     shopInterval := CONFIG['Settings']["shop_timer"]
     eggInterval := CONFIG['Settings']["egg_timer"]
 
     ; macro logic here
-    current_time := A_TickCount
-    nextShopCheck := Mod(getUnixTimeStamp(), shopInterval)
-    nextEggCheck := Mod(getUnixTimeStamp(), eggInterval)
+    current_time := getUnixTimeStamp()
+    nextShopCheckIn := shopInterval - Mod(getUnixTimeStamp(), shopInterval)
+    nextEggCheckIn := eggInterval - Mod(getUnixTimeStamp(), eggInterval)
 
-    SetToolTip("Next shop check in " (shopInterval - nextShopCheck) "s`nNext egg check in " (eggInterval - nextEggCheck) "s")
+    if(show_timestamp_tooltip){
+        SetToolTip("Next shop check in " nextShopCheckIn "s`nNext egg check in " nextEggCheckIn "s")
+    } else {
+        SetToolTip("")
+    }
+
 
     if !macro_running {
         SetTimer(Master, 0)
         return
     }
 
-    if nextEggCheck = 0 && current_time != last_fired_egg { ; default 1800
+    if((Mod(getUnixTimeStamp(), eggInterval) = 0) && (current_time != last_fired_egg)){ ; default 1800
         last_fired_egg := current_time
         trigger_egg_macro := true
     }
 
-    if nextShopCheck = 0 && current_time != last_fired_shop { ; default 300
+    if((Mod(getUnixTimeStamp(), shopInterval) = 0) && (current_time != last_fired_shop)) { ; default 300
         last_fired_shop := current_time
         Macro()
     }
@@ -438,7 +420,11 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
 }
 
 Macro() {
-    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, do_check
+    global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, show_timestamp_tooltip, seedList, gearList
+
+    show_timestamp_tooltip := false
+
+    ToolTip("")
 
     ; go to seed shop
     Press("D", 3)
@@ -456,7 +442,9 @@ Macro() {
         Press("Enter")
         Press("S")
 
+        ToolTip("Buying Seed " seedList[seedIndex] " if in stock")
         Press("Enter", 30)
+        ToolTip("")
         
         Press("W")
         Press("Enter")
@@ -468,15 +456,14 @@ Macro() {
     Press("W")
     Sleep(300)
     Press("Enter")
-    
     ; return to top of seed shop and exit
 
     ; go to gear shop
     Sleep(500)
-    Press("2")
+    Press("2", 1, 100)
     LeftClick()
     Sleep(500)
-    Press("E")
+    Press("E", 1, 100)
 
     ; enter gear shop
     x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
@@ -485,34 +472,37 @@ Macro() {
     Sleep(3000)
     LeftClick()
     Sleep(2000)
-    Press("\", 2)
+    Press("\", 2, 100)
     LeftClick()
-    Press("\")
-    Press("D", 3)
-    Press("S")
+    Press("\", 1, 100)
+    Press("D", 3, 100)
+    Press("S", 1, 100)
 
     ; buy gears
     for i, gearIndex in gearIndexes {
         if(macro_running = false) {
             break
         }
-        Press("S", gearIndex - 1)
+        Press("S", gearIndex - 1, 100)
         Press("Enter")
         Press("S")
 
-        Press("Enter", 30)
+        ToolTip("Buying Gear " gearList[gearIndex] " if in stock")
+        Press("Enter", 5)
+        ToolTip("")
         
-        Press("W")
-        Press("Enter")
-        Press("W", gearIndex - 1)
+        Press("W", 1, 100)
+        Press("Enter", 1, 100)
+        Press("W", gearIndex - 1, 100)
     }
 
     ; return to top of gear shop and exit
-    Press("W")
-    Press("Enter")
+    Press("W", 1, 100)
+    Press("Enter", 1, 100)
 
+    Press("\")
 
-    if trigger_egg_macro {
+    if(trigger_egg_macro) {
         ; egg 1
         HoldKey("S", 0.9)
         Press("E")
@@ -590,10 +580,12 @@ Macro() {
         trigger_egg_macro := false
     }
 
-    ; Press("\", 2)
-    ; LeftClick()
-    ; Press("\")
-    ; Press("D", 4)
-    ; Press("Enter")
-    ; Press("A", 4)
+    Press("\", 2)
+    LeftClick()
+    Press("\")
+    Press("D", 4)
+    Press("Enter")
+    Press("A", 4)
+
+    show_timestamp_tooltip := true
 }
