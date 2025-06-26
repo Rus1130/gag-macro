@@ -164,7 +164,7 @@ HoldKey(key, sec) {
 
 Press(key, num := 1, delay := 50) {
     activeWindow := WinGetTitle("A")
-    if(activeWindow != "Roblox" && activeWindow != "Grow a Garden Macro") {
+    if(activeWindow != "Roblox" && activeWindow != "Grow a Garden Macro" && CONFIG['Settings']["window_failsafe"] = "true") {
         timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
         MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`nTime of termination: " timestamp)
         ExitApp
@@ -242,6 +242,7 @@ PreCheck() {
     ; second 2 presses: return to settings gear
     SetToolTip("Resetting seed shop state")
     Press("\", 4)
+    Press("A", 3)
 
     ; go back into the shop
     SetToolTip("Enter seed shop")
@@ -444,7 +445,7 @@ Master() {
 
 
     if !macro_running {
-        SetTimer(Master, 0)
+        Kill()
         return
     }
 
