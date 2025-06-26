@@ -15,6 +15,8 @@ last_fired_shop := 0
 loop_counter := 0
 trigger_egg_macro := false
 show_timestamp_tooltip := true
+mouse_x := 0
+mouse_y := 0
 
 window := Gui("+Resize", "Grow a Garden Macro")
 window.SetFont("s10")
@@ -250,7 +252,7 @@ PreCheck() {
 
     ; reset dropdown
     SetToolTip("Resetting carrot dropdown")
-    carrotCheck := FindImage("img/carrot_check.png")
+    carrotCheck := FindImage("imgs/carrot_check.png")
     if(carrotCheck == 1){
         Press("Enter")
     }
@@ -294,7 +296,7 @@ PreCheck() {
     SetToolTip("Resetting watering can dropdown")
     Press("Enter", 2)
     Sleep(500)
-    wateringCanCheck := FindImage("img/watering_can_check.png")
+    wateringCanCheck := FindImage("imgs/watering_can_check.png")
     if(wateringCanCheck == 1){
         Press("Enter")
     }
@@ -320,6 +322,11 @@ PreCheck() {
 StartMacro(*) {
     global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
     if !macro_running {
+        if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
+            MsgBox("Important variables not set! Hit the 'Set Config' button.")
+            return
+        }
+
         macro_running := true
         Sleep(CONFIG['Settings']["grace"] * 1000)
         WinMinimize("Grow a Garden Macro")
@@ -350,9 +357,50 @@ StartMacro(*) {
     }
 }
 
+setConfig(*) {
+    global CONFIG, macro_running, mouse_x, mouse_y
+    if !macro_running {
+        macro_running := true
+        Sleep(CONFIG['Settings']["grace"] * 1000)
+        WinMinimize("Grow a Garden Macro")
+        WinActivate("Roblox")
+
+        HoldKey("I", 10)
+        HoldKey("O", 0.5)
+
+        Sleep(100)
+        Press("2")
+        Sleep(100)
+        LeftClick()
+        Sleep(500)
+        Press("E")
+        Sleep(2000)
+
+        t1() {
+            ToolTip("Left click where the dialogue option to enter the gear shop is located.")
+        }
+        SetTimer(t1, 16)
+        KeyWait("LButton", "D")
+        MouseGetPos(&mouse_x, &mouse_y)
+
+        SetTimer(t1, 0)
+        ToolTip("")
+        SetSetting("Config", "gear_enter_point_set", "true")
+        SetSetting("Config", "gear_enter_point_x", mouse_x)
+        SetSetting("Config", "gear_enter_point_y", mouse_y)
+        CONFIG['Config']["gear_enter_point_set"] := "true"
+        CONFIG['Config']["gear_enter_point_x"] := mouse_x
+        CONFIG['Config']["gear_enter_point_y"] := mouse_y
+
+    }
+
+}
+
 startButton := window.AddButton("x" x1 " y" 450 " w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y" 450 " w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
+configButton.OnEvent("Click", setConfig)
 
 window.Show("AutoSize Center")
 
@@ -424,7 +472,7 @@ Macro() {
 
     show_timestamp_tooltip := false
 
-    ToolTip("")
+    SetToolTip("")
 
     ; go to seed shop
     Press("D", 3)
@@ -442,9 +490,9 @@ Macro() {
         Press("Enter")
         Press("S")
 
-        ToolTip("Buying Seed " seedList[seedIndex] " if in stock")
+        SetToolTip("Buying Seed " seedList[seedIndex] " if in stock")
         Press("Enter", 30)
-        ToolTip("")
+        SetToolTip("")
         
         Press("W")
         Press("Enter")
@@ -466,9 +514,7 @@ Macro() {
     Press("E", 1, 100)
 
     ; enter gear shop
-    x := (A_ScreenWidth / 2) + (A_ScreenWidth / 4)
-    y := A_ScreenHeight / 2
-    SmoothMove(x, y - 50, 10, 2)
+    SmoothMove(CONFIG['Config']["gear_enter_point_x"], CONFIG['Config']["gear_enter_point_y"], 10, 2)
     Sleep(3000)
     LeftClick()
     Sleep(2000)
@@ -487,9 +533,9 @@ Macro() {
         Press("Enter")
         Press("S")
 
-        ToolTip("Buying Gear " gearList[gearIndex] " if in stock")
+        SetToolTip("Buying Gear " gearList[gearIndex] " if in stock")
         Press("Enter", 5)
-        ToolTip("")
+        SetToolTip("")
         
         Press("W", 1, 100)
         Press("Enter", 1, 100)
