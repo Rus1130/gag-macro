@@ -273,12 +273,7 @@ StartMacro(*) {
     }
 }
 
-PreCheck() {
-    ; reset zoom
-    SetToolTip("Starting pre-check...")
-    Sleep(1000)
-    SetToolTip("")
-
+AlignCamera() {
     ; turn on shift lock + follow camera
     Press("Esc")
     Sleep(100)
@@ -357,10 +352,19 @@ PreCheck() {
     Press("Enter")
     Sleep(100)
     Press("A", 4)
-    
+
+    ; reset zoom
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
     HoldKey("O", 0.5)
+}
+
+PreCheck() {
+    SetToolTip("Starting pre-check...")
+    Sleep(1000)
+    SetToolTip("")
+
+    AlignCamera()
 
     ; reset ui nav
     SetToolTip("Resetting UI navigation")
@@ -469,8 +473,7 @@ setConfig(*) {
         WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
 
-        HoldKey("I", 10)
-        HoldKey("O", 0.5)
+        AlignCamera()
 
         Sleep(100)
         Press("2")
