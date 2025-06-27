@@ -93,17 +93,6 @@ JoinMap(m, delim := "`n") {
     return RTrim(str, delim)  ; remove trailing delimiter
 }
 
-findDifferences(arr) {
-    diffs := []
-    for i, val in arr {
-        if i = 1
-            diffs.Push(val)  ; Keep the first value
-        else
-            diffs.Push(val - arr[i - 1])
-    }
-    return diffs
-}
-
 ; Create GroupBoxes
 ; Now populate each column — example for eggs:
 seedCheckboxes := AddItemsToColumn(window, "Seeds", seedList, x1 + 10, y1 + 20)
@@ -561,7 +550,7 @@ Macro() {
 
     show_timestamp_tooltip := false
     SetToolTip("")
-    
+
     if(CONFIG["Settings"]["internet_failsafe"] == "true"){
         count := 0
         SetToolTip("Checking internet connection...")
