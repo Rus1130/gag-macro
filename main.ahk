@@ -296,7 +296,7 @@ AlignCamera() {
         if(macro_running = false) {
             break
         }
-        DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 0, "Int", 10)
+        DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 0, "Int", 10, "UPtr", 0)
     }
     SetToolTip("")
 
