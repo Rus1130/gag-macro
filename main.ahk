@@ -85,7 +85,7 @@ JoinMap(m, delim := "`n") {
     str := ""
     for key, val in m {
         if IsObject(val) ; Check if val is a Map (or Object with keys)
-            serializedVal := "{" . JoinMap(val, ", ") . "}"
+            serializedVal := "{" . JoinMap(val, ",") . "}"
         else
             serializedVal := val
         str .= key "=" serializedVal delim
