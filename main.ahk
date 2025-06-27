@@ -17,6 +17,7 @@ trigger_egg_macro := false
 show_timestamp_tooltip := true
 mouse_x := 0
 mouse_y := 0
+first_run := true
 
 window := Gui("+Resize", "Rus' Grow a Garden Macro")
 window.SetFont("s10")
@@ -79,6 +80,11 @@ JoinArr(arr, delim := ",") {
         result .= item
     }
     return result
+}
+
+GetOCR() {
+    global OCR
+    return OCR.FromDesktop().Text
 }
 
 JoinMap(m, delim := "`n") {
@@ -238,12 +244,32 @@ StartMacro(*) {
             }
         }
 
-        Loop 1000 {
-            screenText := OCR.FromDesktop().Text
-            DebugLog(screenText)
+        recallText := InStr(GetOCR(), "Recall")
+
+        if(!recallText){
+            SetToolTip("Recall Wrench not found! Equipping now...")
+            Press("\", 2)
+            LeftClick()
+            Press("\")
+            Press("``")
+            Press("D", 3)
+            Press("S", 2)
+            Press("Enter")
+            Send("^a")
+            Press("Backspace")
+            Send("Recall")
+            Press("Enter")
+            Press("S", 3)
+            Press("W", 2)
+            Press("Enter")
+            Press("S")
+            Press("D")
+            Press("Enter")
+            Press("``")
+            SetToolTip("")
         }
 
-        ; PreCheck()
+        PreCheck()
     }
 }
 
@@ -504,7 +530,7 @@ getUnixTimeStamp() {
 }
 
 Master() {
-    global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro, show_timestamp_tooltip
+    global loop_counter, last_fired_egg, last_fired_shop, CONFIG, trigger_egg_macro, show_timestamp_tooltip, first_run
 
     shopInterval := CONFIG['Settings']["shop_timer"]
     eggInterval := CONFIG['Settings']["egg_timer"]
@@ -526,14 +552,21 @@ Master() {
         return
     }
 
-    if((Mod(getUnixTimeStamp(), eggInterval) = 0) && (current_time != last_fired_egg)){ ; default 1800
-        last_fired_egg := current_time
-        trigger_egg_macro := true
-    }
+    trigger_egg_macro := true
+    Macro()
 
-    if((Mod(getUnixTimeStamp(), shopInterval) = 0) && (current_time != last_fired_shop)) { ; default 300
-        last_fired_shop := current_time
-        Macro()
+    ; if(first_run || (Mod(getUnixTimeStamp(), eggInterval) = 0) && (current_time != last_fired_egg)){
+    ;     last_fired_egg := current_time
+    ;     trigger_egg_macro := true
+    ; }
+
+    ; if(first_run || (Mod(getUnixTimeStamp(), shopInterval) = 0) && (current_time != last_fired_shop)) {
+    ;     last_fired_shop := current_time
+    ;     Macro()
+    ; }
+
+    if(first_run) {
+        first_run := false
     }
 }
 
@@ -555,7 +588,7 @@ Macro() {
         count := 0
         SetToolTip("Checking internet connection...")
         Loop 10 {
-            internetFailsafe := OCR.FromDesktop().Text
+            internetFailsafe := GetOCR()
             if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect"){
                 count++
             }
@@ -587,7 +620,7 @@ Macro() {
         Press("Enter")
         Press("S")
 
-        SetToolTip("Buying Seed " seedList[seedIndex] " if in stock")
+        SetToolTip("Buying " seedList[seedIndex] " Seed if in stock")
         Press("Enter", 30)
         SetToolTip("")
         
@@ -630,7 +663,7 @@ Macro() {
         Press("Enter")
         Press("S")
 
-        SetToolTip("Buying Gear " gearList[gearIndex] " if in stock")
+        SetToolTip("Buying " gearList[gearIndex] " Gear if in stock")
         Press("Enter", 5)
         SetToolTip("")
         
@@ -650,7 +683,7 @@ Macro() {
         HoldKey("S", 0.9)
         Press("E")
         Sleep(500)
-        egg1Text := OCR.FromDesktop().Text
+        egg1Text := GetOCR()
         buyEgg1 := false
         for i, egg in chosenEggs {
             if (InStr(egg1Text, "Purchase " egg)) {
@@ -675,7 +708,7 @@ Macro() {
         HoldKey("S", 0.2)
         Press("E")
         Sleep(500)
-        egg2Text := OCR.FromDesktop().Text
+        egg2Text := GetOCR()
         buyEgg2 := false
         for i, egg in chosenEggs {
             if (InStr(egg2Text, "Purchase " egg)) {
@@ -699,7 +732,7 @@ Macro() {
         HoldKey("S", 0.2)
         Press("E")
         Sleep(500)
-        egg3Text := OCR.FromDesktop().Text
+        egg3Text := GetOCR()
         buyEgg3 := false
         for i, egg in chosenEggs {
             if (InStr(egg3Text, "Purchase " egg)) {

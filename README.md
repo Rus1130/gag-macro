@@ -14,3 +14,4 @@ This is a macro for the hit Roblox game Grow a Garden.
 * `grace`: Seconds between pressing the start button and the macro actually starting. Default is `5` seconds.
 # Tips:
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.
+* Closing chat is recommended
