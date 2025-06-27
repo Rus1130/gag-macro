@@ -18,7 +18,7 @@ show_timestamp_tooltip := true
 mouse_x := 0
 mouse_y := 0
 
-window := Gui("+Resize", "Grow a Garden Macro")
+window := Gui("+Resize", "Rus' Grow a Garden Macro")
 window.SetFont("s10")
 
 ReadEntireIni(filePath) {
@@ -164,12 +164,14 @@ HoldKey(key, sec) {
 
 Press(key, num := 1, delay := 50) {
     activeWindow := WinGetTitle("A")
-    if(activeWindow != "Roblox" && activeWindow != "Grow a Garden Macro" && CONFIG['Settings']["window_failsafe"] = "true") {
+    if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
         timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
+        SetToolTip("")
         MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`nTime of termination: " timestamp)
         ExitApp
         return
     }
+
     loop num {
         if(macro_running == false) {
             break
@@ -213,10 +215,129 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
     }
 }
 
+StartMacro(*) {
+    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
+    if !macro_running {
+        if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
+            MsgBox("Important variables not set! Hit the 'Set Config' button.")
+            return
+        }
+
+        macro_running := true
+        Sleep(CONFIG['Settings']["grace"] * 1000)
+        WinMinimize("Rus' Grow a Garden Macro")
+        WinActivate("Roblox")
+
+        for i, chk in seedCheckboxes {
+            SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
+            if(chk.Value == 1) {
+                seedIndexes.Push(i)
+            }
+        }
+
+        for i, chk in gearCheckboxes {
+            SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
+            if(chk.Value == 1) {
+                gearIndexes.Push(i)
+            }
+        }
+
+        for i, chk in eggCheckboxes {
+            SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
+            if(chk.Value == 1) {
+                chosenEggs.Push(eggList[i])
+            }
+        }
+
+        PreCheck()
+    }
+}
+
 PreCheck() {
     ; reset zoom
     SetToolTip("Starting pre-check...")
     Sleep(1000)
+    SetToolTip("")
+
+    ; turn on shift lock + follow camera
+    Press("Esc")
+    Sleep(100)
+    Press("Tab")
+    Sleep(100)
+    Press("D")
+    Sleep(100)
+    Press("S")
+    Sleep(100)
+    Press("D", 2)
+    Sleep(100)
+    Press("Esc")
+    Sleep(1000)
+
+    ; reset camera orbit
+    SetToolTip("Reset camera orbit")
+    Press("LShift")
+    Sleep(500)
+    loop 200 {
+        if(macro_running = false) {
+            break
+        }
+        DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 0, "Int", 10)
+    }
+    SetToolTip("")
+
+    ; turn off shift lock
+    Sleep(200)
+    Press("Esc")
+    Sleep(100)
+    Press("Tab")
+    Sleep(100)
+    Press("D")
+    Sleep(100)
+    Press("Esc")
+    Sleep(200)
+
+    ; reset ui nav
+    Press("\", 2)
+    Sleep(100)
+    LeftClick()
+    Press("\")
+
+    Press("D", 3)
+
+    ; align camera
+    SetToolTip("Aligning camera")
+    loop 15 {
+        if(macro_running = false) {
+            break
+        }
+        Press("Enter")
+        Press("D", 2)
+        Press("Enter")
+        Press("A", 2)
+    }
+    SetToolTip("")
+
+    Press("Enter")
+
+    ; turn off follow camera
+    Press("Esc")
+    Sleep(100)
+    Press("Tab")
+    Sleep(100)
+    Press("S")
+    Sleep(100)
+    Press("D", 2)
+    Sleep(100)
+    Press("Esc")
+
+    ; return to plot
+    Sleep(200)
+    Press("D")
+    Sleep(200)
+    Press("Enter")
+    Sleep(100)
+    Press("A", 4)
+    
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
     HoldKey("O", 0.5)
@@ -320,50 +441,12 @@ PreCheck() {
     SetTimer(Master, 100)
 }
 
-StartMacro(*) {
-    global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
-    if !macro_running {
-        if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
-            MsgBox("Important variables not set! Hit the 'Set Config' button.")
-            return
-        }
-
-        macro_running := true
-        Sleep(CONFIG['Settings']["grace"] * 1000)
-        WinMinimize("Grow a Garden Macro")
-        WinActivate("Roblox")
-
-        for i, chk in seedCheckboxes {
-            SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
-            if(chk.Value == 1) {
-                seedIndexes.Push(i)
-            }
-        }
-
-        for i, chk in gearCheckboxes {
-            SetSetting("Gears", chk.Text, chk.Value == 1 ? "true" : "false")
-            if(chk.Value == 1) {
-                gearIndexes.Push(i)
-            }
-        }
-
-        for i, chk in eggCheckboxes {
-            SetSetting("Eggs", chk.Text, chk.Value == 1 ? "true" : "false")
-            if(chk.Value == 1) {
-                chosenEggs.Push(eggList[i])
-            }
-        }
-
-        PreCheck()
-    }
-}
-
 setConfig(*) {
     global CONFIG, macro_running, mouse_x, mouse_y
     if !macro_running {
         macro_running := true
         Sleep(CONFIG['Settings']["grace"] * 1000)
-        WinMinimize("Grow a Garden Macro")
+        WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
 
         HoldKey("I", 10)
@@ -410,9 +493,9 @@ Kill(*) {
     if macro_running {
         macro_running := false
         SetTimer(Master, 0)
-        MsgBox("Macro stopped.")
         SetToolTip("")
-        WinActivate("Grow a Garden Macro")
+        MsgBox("Macro stopped.")
+        WinActivate("Rus' Grow a Garden Macro")
     }
 }
 
