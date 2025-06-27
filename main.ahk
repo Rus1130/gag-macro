@@ -172,7 +172,7 @@ Press(key, num := 1, delay := 50) {
             break
         }
         ; get the current focused window
-        Sleep(delay)
+        Sleep(100)
         Send("{" key "}")
         if(macro_running == false) {
             break
@@ -458,7 +458,7 @@ PreCheck() {
     Sleep(1000)
     SetToolTip("")
 
-    SetTimer(Master, 100)
+    SetTimer(Master)
 }
 
 setConfig(*) {
@@ -552,18 +552,15 @@ Master() {
         return
     }
 
-    trigger_egg_macro := true
-    Macro()
+    if(first_run || (Mod(getUnixTimeStamp(), eggInterval) = 0) && (current_time != last_fired_egg)){
+        last_fired_egg := current_time
+        trigger_egg_macro := true
+    }
 
-    ; if(first_run || (Mod(getUnixTimeStamp(), eggInterval) = 0) && (current_time != last_fired_egg)){
-    ;     last_fired_egg := current_time
-    ;     trigger_egg_macro := true
-    ; }
-
-    ; if(first_run || (Mod(getUnixTimeStamp(), shopInterval) = 0) && (current_time != last_fired_shop)) {
-    ;     last_fired_shop := current_time
-    ;     Macro()
-    ; }
+    if(first_run || (Mod(getUnixTimeStamp(), shopInterval) = 0) && (current_time != last_fired_shop)) {
+        last_fired_shop := current_time
+        Macro()
+    }
 
     if(first_run) {
         first_run := false
@@ -638,28 +635,28 @@ Macro() {
 
     ; go to gear shop
     Sleep(500)
-    Press("2", 1, 100)
+    Press("2", 1)
     LeftClick()
     Sleep(500)
-    Press("E", 1, 100)
+    Press("E", 1)
 
     ; enter gear shop
     SmoothMove(CONFIG['Config']["gear_enter_point_x"], CONFIG['Config']["gear_enter_point_y"], 10, 2)
     Sleep(3000)
     LeftClick()
     Sleep(2000)
-    Press("\", 2, 100)
+    Press("\", 2)
     LeftClick()
-    Press("\", 1, 100)
-    Press("D", 3, 100)
-    Press("S", 1, 100)
+    Press("\", 1)
+    Press("D", 3)
+    Press("S", 1)
 
     ; buy gears
     for i, gearIndex in gearIndexes {
         if(macro_running = false) {
             break
         }
-        Press("S", gearIndex - 1, 100)
+        Press("S", gearIndex - 1)
         Press("Enter")
         Press("S")
 
@@ -667,14 +664,14 @@ Macro() {
         Press("Enter", 5)
         SetToolTip("")
         
-        Press("W", 1, 100)
-        Press("Enter", 1, 100)
-        Press("W", gearIndex - 1, 100)
+        Press("W", 1)
+        Press("Enter", 1)
+        Press("W", gearIndex - 1)
     }
 
     ; return to top of gear shop and exit
-    Press("W", 1, 100)
-    Press("Enter", 1, 100)
+    Press("W", 1)
+    Press("Enter", 1)
 
     Press("\")
 
@@ -750,9 +747,6 @@ Macro() {
             Press("Enter")
         }
 
-
-        ; result := OCR.FromDesktop()
-        ; MsgBox "All text from desktop: `n" result.Text
         trigger_egg_macro := false
     }
 
