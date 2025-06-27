@@ -249,7 +249,12 @@ StartMacro(*) {
             }
         }
 
-        PreCheck()
+        Loop 1000 {
+            screenText := OCR.FromDesktop().Text
+            DebugLog(screenText)
+        }
+
+        ; PreCheck()
     }
 }
 
@@ -555,8 +560,27 @@ Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, show_timestamp_tooltip, seedList, gearList
 
     show_timestamp_tooltip := false
-
     SetToolTip("")
+    
+    if(CONFIG["Settings"]["internet_failsafe"] == "true"){
+        count := 0
+        SetToolTip("Checking internet connection...")
+        Loop 10 {
+            internetFailsafe := OCR.FromDesktop().Text
+            if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect"){
+                count++
+            }
+        }
+
+        SetToolTip("")
+
+        if(count > 5){
+            timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
+            MsgBox("Internet was disconnected`nMacro has been terminated.`nTime of termination: " timestamp)
+            ExitApp
+            return
+        }
+    }
 
     ; go to seed shop
     Press("D", 3)
