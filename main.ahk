@@ -219,16 +219,19 @@ StartMacro(*) {
     if !macro_running {
         if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
             MsgBox("Gear entrance point not set! Hit the 'Set Config' button.")
+            Kill()
             return
         }
 
         if(CONFIG["Config"]["egg_top_corner_set"] = "false"){
             MsgBox("Egg top corner not set! Hit the 'Set Config' button.")
+            Kill()
             return
         }
 
         if(CONFIG["Config"]["egg_bottom_corner_set"] = "false"){
             MsgBox("Egg bottom corner not set! Hit the 'Set Config' button.")
+            Kill()
             return
         }
 
@@ -737,11 +740,13 @@ Macro() {
     show_timestamp_tooltip := false
     SetToolTip("")
 
+    scanCount := CONFIG["Settings"]["failsafe_scan_count"]
+
     ; internet failsafe
     if(CONFIG["Settings"]["internet_failsafe"] == "true"){
         count := 0
         SetToolTip("Checking internet connection...")
-        Loop 10 {
+        Loop scanCount {
             internetFailsafe := GetOCR()
             if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect"){
                 count++
@@ -750,7 +755,7 @@ Macro() {
 
         SetToolTip("")
 
-        if(count > 5){
+        if(count > (scanCount / 2)){
             MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
             ExitApp
             return
@@ -761,7 +766,7 @@ Macro() {
     if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
         count := 0
         SetToolTip("Checking for server shutdown...")
-        Loop 10 {
+        Loop scanCount {
             shutdownFailsafe := GetOCR()
             if(shutdownFailsafe == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect"){
                 count++
@@ -770,12 +775,33 @@ Macro() {
 
         SetToolTip("")
 
-        if(count > 5){
+        if(count > (scanCount / 2)){
             MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
             ExitApp
             return
         }
     }
+
+    ; other failsafe
+    if(CONFIG["Settings"]["other_failsafe"] == "true"){
+        count := 0
+        SetToolTip("Checking for other failsafe...")
+        Loop scanCount {
+            otherFailsafe := GetOCR()
+            if(RegExMatch(otherFailsafe, "Disconnected (.*) Leave Reconnect")){
+                count++
+            }
+        }
+
+        SetToolTip("")
+
+        if(count > (scanCount / 2)){
+            MsgBox("Game was terminated for an unspecified reason`nMacro has been terminated.`n" ToT())
+            ExitApp
+            return
+        }
+    }
+
 
     ; go to seed shop
     Press("D", 3)
@@ -789,7 +815,7 @@ Macro() {
         if(macro_running = false) {
             break
         }
-        SetToolTip("Buying " seedList[seedIndex] " Seed if in stock")
+        SetToolTip("Buying " seedList[seedIndex] " seed if in stock")
         Press("S", seedIndex - 1)
         Press("Enter")
         Press("S")
@@ -832,7 +858,7 @@ Macro() {
         if(macro_running = false) {
             break
         }
-        SetToolTip("Buying " gearList[gearIndex] " Gear if in stock")
+        SetToolTip("Buying " gearList[gearIndex] " gear if in stock")
         Press("S", gearIndex - 1)
         Press("Enter")
         Press("S")

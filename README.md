@@ -9,13 +9,17 @@ This is a macro for the hit Roblox game Grow a Garden.
 * Automatic character alignment
 * Automatic camera alignment
 * Failsafe checks to ensure that the macro does not run when it shouldn't
+## Failsafes
+This macro has several failsafes to ensure that it does not run when it shouldn't. For each enabled failsafe, the macro will scan the screen for certain text for a certain number of times before terminating. If the text is found for more than half of the scans, the macro will terminate.
 # settings.ini
 * `kill_key`: The key to press to stop the macro. Default is `F6`.
 * `show_tooltips`: Whether to show tooltips in the UI. Default is `true`.
 * `window_failsafe`: When enabled, the macro will only run if Roblox is in focus. Default is `true`.
 * `internet_failsafe`: When enabled, the macro will terminate if disconnected from the internet. Default is `true`.
 * `shutdown_failsafe`: When enabled, the macro will terminate if the server shuts down. Default is `true`.
+* `other_failsafe`: When enabled, the macro will terminate if the player is disconnected from the server for any other reason. Default is `true`.
 * `shop_timer`: Time between checks of the seed and gear shops. Default is every `300` seconds since midnight.
+* `failsafe_scan_count`: Number of times to scan the screen for failsafe text before terminating the macro. Default is `10`.
 * `egg_timer`: Time between egg checks. Default is every `1800` seconds since midnight.
 * `grace`: Seconds between pressing the start button and the macro actually starting. Default is `5` seconds.
 # Config setup
