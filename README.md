@@ -14,6 +14,7 @@ This is a macro for the hit Roblox game Grow a Garden.
 * `show_tooltips`: Whether to show tooltips in the UI. Default is `true`.
 * `window_failsafe`: When enabled, the macro will only run if Roblox is in focus. Default is `true`.
 * `internet_failsafe`: When enabled, the macro will terminate if disconnected from the internet. Default is `true`.
+* `shutdown_failsafe`: When enabled, the macro will terminate if the server shuts down. Default is `true`.
 * `shop_timer`: Time between checks of the seed and gear shops. Default is every `300` seconds since midnight.
 * `egg_timer`: Time between egg checks. Default is every `1800` seconds since midnight.
 * `grace`: Seconds between pressing the start button and the macro actually starting. Default is `5` seconds.

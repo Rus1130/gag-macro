@@ -298,13 +298,11 @@ StartMacro(*) {
                 tabCheck++
             }
         }
+        ; The server has shut down.
         SetToolTip("")
 
         if(tabCheck > 25) {
-            MsgBox("The player list is open! Please close it before starting the macro.")
-            Kill()
-            WinActivate("Rus' Grow a Garden Macro")
-            return
+            Press("Tab")
         }
 
         ; SetToolTip("Looking for Recall Wrench...")
@@ -739,6 +737,7 @@ Macro() {
     show_timestamp_tooltip := false
     SetToolTip("")
 
+    ; internet failsafe
     if(CONFIG["Settings"]["internet_failsafe"] == "true"){
         count := 0
         SetToolTip("Checking internet connection...")
@@ -753,6 +752,26 @@ Macro() {
 
         if(count > 5){
             MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
+            ExitApp
+            return
+        }
+    }
+
+    ; shutdown failsafe
+    if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
+        count := 0
+        SetToolTip("Checking for server shutdown...")
+        Loop 10 {
+            shutdownFailsafe := GetOCR()
+            if(shutdownFailsafe == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect"){
+                count++
+            }
+        }
+
+        SetToolTip("")
+
+        if(count > 5){
+            MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
             ExitApp
             return
         }
