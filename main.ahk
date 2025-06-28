@@ -87,6 +87,11 @@ GetOCR() {
     return OCR.FromDesktop().Text
 }
 
+GetOCRRect(x, y, w, h) {
+    global OCR
+    return OCR.FromRect(x, y, w, h).Text
+}
+
 JoinMap(m, delim := "`n") {
     str := ""
     for key, val in m {
@@ -157,12 +162,11 @@ HoldKey(key, sec) {
     Send("{" key " up}")
 }
 
-Press(key, num := 1, delay := 50) {
+Press(key, num := 1, delay := 100) {
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
-        timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
         SetToolTip("")
-        MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`nTime of termination: " timestamp)
+        MsgBox("Roblox window must be focused as a failsafe.`nMacro has been terminated.`n" ToT())
         ExitApp
         return
     }
@@ -172,7 +176,7 @@ Press(key, num := 1, delay := 50) {
             break
         }
         ; get the current focused window
-        Sleep(100)
+        Sleep(delay)
         Send("{" key "}")
         if(macro_running == false) {
             break
@@ -219,9 +223,51 @@ StartMacro(*) {
         }
 
         macro_running := true
+        SetToolTip("Starting macro...")
         Sleep(CONFIG['Settings']["grace"] * 1000)
+        SetToolTip("")
         WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
+
+        Sleep(200)
+
+        chatCheck := 0
+        tabCheck := 0
+        SetToolTip("Checking if chat or player list is open...")
+        Loop 50 {
+            if(macro_running = false) {
+                break
+            }
+            chatString := GetOCRRect(0, 0, 300, 300)
+            tabString := GetOCRRect(A_ScreenWidth-300, 0, 300, 300)
+            if(StrLen(tabString) > 10) {
+                tabCheck++
+            }
+            if(StrLen(chatString) > 10) {
+                chatCheck++
+            }
+        }
+
+        SetToolTip("")
+
+        whatIsOpen := []
+
+        if(chatCheck > 25){
+            whatIsOpen.Push("chat")
+        }
+
+        if(tabCheck > 25){
+            whatIsOpen.Push("player list")
+        }
+
+        if(whatIsOpen.Length > 0) {
+            str := JoinArr(whatIsOpen, " and ")
+            str .= " is open! Please close " . (whatIsOpen.Length == 1 ? "it" : "them") . " before starting the macro."
+            MsgBox(str)
+            Kill()
+            WinActivate("Rus' Grow a Garden Macro")
+            return
+        }
 
         for i, chk in seedCheckboxes {
             SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
@@ -244,9 +290,19 @@ StartMacro(*) {
             }
         }
 
-        recallText := InStr(GetOCR(), "Recall")
+        SetToolTip("Looking for Recall Wrench...")
+        recallCount := 0 
+        loop 8 {
+            if(macro_running = false) {
+                break
+            }
+            str := RegExReplace(GetOCR(), "Looking for Recall Wrench\.{1,3}", "")            
+            if(InStr(str, "Recall") = 0) {
+                recallCount++
+            }
+        }
 
-        if(!recallText){
+        if(recallCount > 4){
             SetToolTip("Recall Wrench not found! Equipping now...")
             Press("\", 2)
             LeftClick()
@@ -266,10 +322,10 @@ StartMacro(*) {
             Press("D")
             Press("Enter")
             Press("``")
-            SetToolTip("")
         }
+        SetToolTip("")
 
-        PreCheck()
+        Setup()
     }
 }
 
@@ -321,7 +377,7 @@ AlignCamera() {
 
     ; align camera
     SetToolTip("Aligning camera")
-    loop 15 {
+    loop 8 {
         if(macro_running = false) {
             break
         }
@@ -354,13 +410,16 @@ AlignCamera() {
     Press("A", 4)
 
     ; reset zoom
+    Press("\", 2)
+    Sleep(100)
+    LeftClick()
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
     HoldKey("O", 0.5)
 }
 
-PreCheck() {
-    SetToolTip("Starting pre-check...")
+Setup() {
+    SetToolTip("Starting setup...")
     Sleep(1000)
     SetToolTip("")
 
@@ -458,18 +517,20 @@ PreCheck() {
     Press("D", 4)
     Press("Enter")
     Press("A", 4)
-    SetToolTip("Pre-check complete")
+    SetToolTip("Setup complete")
     Sleep(1000)
     SetToolTip("")
 
-    SetTimer(Master)
+    SetTimer(Master, 10)
 }
 
 setConfig(*) {
     global CONFIG, macro_running, mouse_x, mouse_y
     if !macro_running {
         macro_running := true
+        SetToolTip("Starting config set...")
         Sleep(CONFIG['Settings']["grace"] * 1000)
+        SetToolTip("")
         WinMinimize("Rus' Grow a Garden Macro")
         WinActivate("Roblox")
 
@@ -499,6 +560,12 @@ setConfig(*) {
         CONFIG['Config']["gear_enter_point_x"] := mouse_x
         CONFIG['Config']["gear_enter_point_y"] := mouse_y
 
+        ToolTip("Done!")
+        
+        SetTimer((*) => (
+            ToolTip("")
+        ), 1000)
+
     }
 
 }
@@ -517,6 +584,7 @@ Kill(*) {
         macro_running := false
         SetTimer(Master, 0)
         SetToolTip("")
+        
         MsgBox("Macro stopped.")
         WinActivate("Rus' Grow a Garden Macro")
     }
@@ -578,6 +646,14 @@ FindImage(path, x1 := 0, y1 := 0, x2 := A_ScreenWidth, y2 := A_ScreenHeight) {
     return imgFound
 }
 
+/**
+ * Time of Termination
+ */
+ToT(){
+    timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
+    return "Time of termination: " . timestamp
+}
+
 Macro() {
     global CONFIG, trigger_egg_macro, seedIndexes, gearIndexes, chosenEggs, show_timestamp_tooltip, seedList, gearList
 
@@ -597,8 +673,7 @@ Macro() {
         SetToolTip("")
 
         if(count > 5){
-            timestamp := FormatTime(, "dd/MM/yyyy HH:mm:ss")
-            MsgBox("Internet was disconnected`nMacro has been terminated.`nTime of termination: " timestamp)
+            MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
             ExitApp
             return
         }
@@ -616,17 +691,17 @@ Macro() {
         if(macro_running = false) {
             break
         }
+        SetToolTip("Buying " seedList[seedIndex] " Seed if in stock")
         Press("S", seedIndex - 1)
         Press("Enter")
         Press("S")
 
-        SetToolTip("Buying " seedList[seedIndex] " Seed if in stock")
-        Press("Enter", 30)
-        SetToolTip("")
+        Press("Enter", 30, 50)
         
         Press("W")
         Press("Enter")
         Press("W", seedIndex - 1)
+        SetToolTip("")
     }
 
     Press("Enter", 2)
@@ -659,17 +734,17 @@ Macro() {
         if(macro_running = false) {
             break
         }
+        SetToolTip("Buying " gearList[gearIndex] " Gear if in stock")
         Press("S", gearIndex - 1)
         Press("Enter")
         Press("S")
 
-        SetToolTip("Buying " gearList[gearIndex] " Gear if in stock")
         Press("Enter", 5)
-        SetToolTip("")
         
         Press("W", 1)
         Press("Enter", 1)
         Press("W", gearIndex - 1)
+        SetToolTip("")
     }
 
     ; return to top of gear shop and exit
@@ -683,6 +758,7 @@ Macro() {
         HoldKey("S", 0.9)
         Press("E")
         Sleep(500)
+        SetToolTip("Buying egg 1...")
         egg1Text := GetOCR()
         buyEgg1 := false
         for i, egg in chosenEggs {
@@ -690,6 +766,11 @@ Macro() {
                 buyEgg1 := true
                 break
             }
+        }
+        if(buyEgg1) {
+            SetToolTip("Buying egg")
+        } else {
+            SetToolTip("Skipping egg")
         }
         Press("\")
         Press("D", 3)
@@ -701,6 +782,7 @@ Macro() {
             Press("D", 2)
             Press("Enter")
         }
+        SetToolTip("")
         Press("\")
 
 
@@ -716,6 +798,11 @@ Macro() {
                 break
             }
         }
+        if(buyEgg2) {
+            SetToolTip("Buying egg 2...")
+        } else {
+            SetToolTip("Skipping egg 2")
+        }
         Press("\")
         Press("D", 3)
         Press("S")
@@ -726,6 +813,7 @@ Macro() {
             Press("D", 2)
             Press("Enter")
         }
+        SetToolTip("")
         Press("\")
 
         ; egg 3
@@ -740,6 +828,11 @@ Macro() {
                 break
             }
         }
+        if(buyEgg3) {
+            SetToolTip("Buying egg 3...")
+        } else {
+            SetToolTip("Skipping egg 3")
+        }
         Press("\")
         Press("D", 3)
         Press("S")
@@ -749,6 +842,7 @@ Macro() {
             Press("D", 2)
             Press("Enter")
         }
+        SetToolTip("")
 
         trigger_egg_macro := false
     }
