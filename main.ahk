@@ -1,5 +1,8 @@
 #Requires AutoHotkey v2.0
 #Include ./lib/OCR.ahk
+#Include ./lib/FuzzyMatch.ahk
+
+Fuz := Fuzzy()
 
 settingsFile := "settings.ini"
 
@@ -61,11 +64,11 @@ x1 := 10, y1 := 0, w := 250
 x2 := x1 + w + 20
 x3 := x2 + w + 20
 
-seedList := ["Carrot", "Strawberry", "Blueberry", "Tomato", "Cauliflower", "Watermelon", "Green Apple", "Avocado", "Banana", "Pineapple", "Kiwi", "Bell Pepper", "Prickly Pear", "Loquat", "Feijoa", "Sugar Apple"]
+seedList := ["Carrot", "Strawberry", "Blueberry", "Tomato", "Cauliflower", "Watermelon", "Rafflesia", "Green Apple", "Avocado", "Banana", "Pineapple", "Kiwi", "Bell Pepper", "Prickly Pear", "Loquat", "Feijoa", "Pitcher Plant", "Sugar Apple"]
 
-gearList := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
+gearList := ["Watering Can", "Trowel", "Recall Wrench", "Basic Sprinkler", "Advanced Sprinkler", "Godly Sprinkler", "Magnifying Glass", "Tanning Mirror", "Master Sprinkler", "Cleaning Spray", "Favorite Tool", "Harvest Tool", "Friendship Pot"]
 
-eggList := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg", "Bug Egg"]
+eggList := ["Common Egg", "Common Summer Egg", "Rare Summer Egg", "Mythical Egg", "Paradise Egg", "Bee Egg", "Bug Egg"]
 
 seedIndexes := []
 gearIndexes := []
@@ -87,9 +90,9 @@ GetOCR() {
     return OCR.FromDesktop().Text
 }
 
-GetOCRRect(x, y, w, h) {
+GetOCRRect(x, y, w, h, opts := {}) {
     global OCR
-    return OCR.FromRect(x, y, w, h).Text
+    return OCR.FromRect(x, y, w, h, opts).Text
 }
 
 JoinMap(m, delim := "`n") {
@@ -344,6 +347,8 @@ StartMacro(*) {
         ; SetToolTip("")
 
         Setup()
+
+        ; Macro()
     }
 }
 
@@ -642,6 +647,7 @@ setConfig(*) {
         Sleep(600)
 
         ToolTip("Done! You can now run the macro.")
+        macro_running := false
         
         SetTimer((*) => (
             ToolTip("")
@@ -650,8 +656,8 @@ setConfig(*) {
 
 }
 
-startButton := window.AddButton("x" x1 " y" 450 " w100", "Start")
-configButton := window.AddButton("x" (x1 + 110) " y" 450 " w130", "Set Config")
+startButton := window.AddButton("x" x1 " y" 500 " w100", "Start")
+configButton := window.AddButton("x" (x1 + 110) " y" 500 " w130", "Set Config")
 
 startButton.OnEvent("Click", StartMacro)
 configButton.OnEvent("Click", setConfig)
@@ -802,6 +808,8 @@ Macro() {
         }
     }
 
+    Sleep(1000)
+
 
     ; go to seed shop
     Press("D", 3)
@@ -877,48 +885,59 @@ Macro() {
 
     Press("\")
 
-    trigger_egg_macro := true
     if(trigger_egg_macro) {
         ; go to egg 1
         HoldKey("S", 0.9)
         Press("E")
         Sleep(500)
-        SetToolTip("Checking egg 1...")
+        SetToolTip("Checking egg 1 0/30")
         egg1Count := 0
         buyEgg1 := false
+        egg1Loop := 1
+        Loop 30 {
 
-        Loop 50 {
-            egg1Text := GetOCRRect(
-                CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_top_corner_y"],
-                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
-            )
+            ; save an image of the screen to temp file
 
             for i, egg in chosenEggs {
-                if (InStr(egg1Text, "Purchase " egg)) {
-                    egg1Count++
+
+                egg1Text := GetOCRRect(
+                    CONFIG['Config']["egg_top_corner_x"],
+                    CONFIG['Config']["egg_top_corner_y"],
+                    CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
+                    CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
+                    {
+                        grayscale: 1,
+                    }
+                )
+
+                for i, egg in chosenEggs {
+                    if(macro_running = false) {
+                        break
+                    }
+
+                    lev := Fuz.LevenshteinDistance(egg1Text, egg)
+
+                    if(lev < 4){
+                        egg1Count++
+                    }
                 }
             }
+            SetToolTip("Checking egg 1 " egg1Loop "/30")
+            egg1Loop++
         }
-
         SetToolTip("")
-
-        if(egg1Count > 25){
+        if(egg1Count > 15){
            buyEgg1 := true
         }
-
         if(buyEgg1) {
             SetToolTip("Buying egg 1")
         } else {
             SetToolTip("Skipping egg 1")
         }
-
         ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
-
         if(buyEgg1) {
             ; buy
             Press("Enter")
@@ -934,42 +953,49 @@ Macro() {
         HoldKey("S", 0.18)
         Press("E")
         Sleep(500)
-        SetToolTip("Checking egg 2...")
+        SetToolTip("Checking egg 2 0/30")
         egg2Count := 0
         buyEgg2 := false
+        egg2Loop := 1
+        Loop 30 {
+            if(macro_running = false) {
+                break
+            }
 
-        Loop 50 {
             egg2Text := GetOCRRect(
                 CONFIG['Config']["egg_top_corner_x"],
                 CONFIG['Config']["egg_top_corner_y"],
                 CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
+                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
+                {
+                    grayscale: 1,
+                }
             )
 
             for i, egg in chosenEggs {
-                if (InStr(egg2Text, "Purchase " egg)) {
+                lev := Fuz.LevenshteinDistance(egg2Text, egg)
+
+                if(lev < 4){
                     egg2Count++
                 }
             }
+
+            SetToolTip("Checking egg 2 " egg2Loop "/30")
+            egg2Loop++
         }
-
         SetToolTip("")
-
-        if(egg2Count > 25){
+        if(egg2Count > 15){
             buyEgg2 := true
         }
-
         if(buyEgg2) {
             SetToolTip("Buying egg 2")
         } else {
             SetToolTip("Skipping egg 2")
         }
-
         ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
-
         if(buyEgg2) {
             ; buy
             Press("Enter")
@@ -985,42 +1011,49 @@ Macro() {
         HoldKey("S", 0.18)
         Press("E")
         Sleep(500)
-        SetToolTip("Checking egg 3...")
+        SetToolTip("Checking egg 3 0/30")
         egg3Count := 0
         buyEgg3 := false
+        egg3Loop := 1
+        Loop 30 {
+            if(macro_running = false) {
+                break
+            }
 
-        Loop 50 {
             egg3Text := GetOCRRect(
                 CONFIG['Config']["egg_top_corner_x"],
                 CONFIG['Config']["egg_top_corner_y"],
                 CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
-                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
+                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"],
+                {
+                    grayscale: 1,
+                }
             )
 
             for i, egg in chosenEggs {
-                if (InStr(egg3Text, "Purchase " egg)) {
+                lev := Fuz.LevenshteinDistance(egg3Text, egg)
+
+                if(lev < 4){
                     egg3Count++
                 }
             }
+
+            SetToolTip("Checking egg 3 " egg3Loop "/30")
+            egg3Loop++
         }
-
         SetToolTip("")
-
-        if(egg3Count > 25){
+        if(egg3Count > 15){
             buyEgg3 := true
         }
-
         if(buyEgg3) {
             SetToolTip("Buying egg 3")
         } else {
             SetToolTip("Skipping egg 3")
         }
-
         ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
-
         if(buyEgg3) {
             ; buy
             Press("Enter")
