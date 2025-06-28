@@ -218,57 +218,21 @@ StartMacro(*) {
     global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
     if !macro_running {
         if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
-            MsgBox("Important variables not set! Hit the 'Set Config' button.")
+            MsgBox("Gear entrance point not set! Hit the 'Set Config' button.")
             return
         }
 
-        macro_running := true
-        SetToolTip("Starting macro...")
-        Sleep(CONFIG['Settings']["grace"] * 1000)
-        SetToolTip("")
-        WinMinimize("Rus' Grow a Garden Macro")
-        WinActivate("Roblox")
-
-        Sleep(200)
-
-        chatCheck := 0
-        tabCheck := 0
-        SetToolTip("Checking if chat or player list is open...")
-        Loop 50 {
-            if(macro_running = false) {
-                break
-            }
-            chatString := GetOCRRect(0, 0, 300, 300)
-            tabString := GetOCRRect(A_ScreenWidth-300, 0, 300, 300)
-            if(StrLen(tabString) > 10) {
-                tabCheck++
-            }
-            if(StrLen(chatString) > 10) {
-                chatCheck++
-            }
-        }
-
-        SetToolTip("")
-
-        whatIsOpen := []
-
-        if(chatCheck > 25){
-            whatIsOpen.Push("chat")
-        }
-
-        if(tabCheck > 25){
-            whatIsOpen.Push("player list")
-        }
-
-        if(whatIsOpen.Length > 0) {
-            str := JoinArr(whatIsOpen, " and ")
-            str .= " is open! Please close " . (whatIsOpen.Length == 1 ? "it" : "them") . " before starting the macro."
-            MsgBox(str)
-            Kill()
-            WinActivate("Rus' Grow a Garden Macro")
+        if(CONFIG["Config"]["egg_top_corner_set"] = "false"){
+            MsgBox("Egg top corner not set! Hit the 'Set Config' button.")
             return
         }
 
+        if(CONFIG["Config"]["egg_bottom_corner_set"] = "false"){
+            MsgBox("Egg bottom corner not set! Hit the 'Set Config' button.")
+            return
+        }
+
+        SetToolTip("Getting data from settings.ini")
         for i, chk in seedCheckboxes {
             SetSetting("Seeds", chk.Text, chk.Value == 1 ? "true" : "false")
             if(chk.Value == 1) {
@@ -288,6 +252,59 @@ StartMacro(*) {
             if(chk.Value == 1) {
                 chosenEggs.Push(eggList[i])
             }
+        }
+
+        macro_running := true
+        SetToolTip("Starting macro...")
+        Sleep(CONFIG['Settings']["grace"] * 1000)
+        SetToolTip("")
+        WinMinimize("Rus' Grow a Garden Macro")
+        WinActivate("Roblox")
+
+        Sleep(200)
+
+        chatCheck := 0
+        SetToolTip("Checking if chat is open...")
+        Loop 50 {
+            if(macro_running = false) {
+                break
+            }
+
+            chatString := GetOCRRect(0, 0, 500, 500)
+
+            if(InStr(chatString, "[Tip]") || RegExMatch(chatString, "translates( supported lang)?")) {
+                chatCheck++
+            }
+        }
+        SetToolTip("")
+
+        if(chatCheck > 25) {
+            MsgBox("The chat is open! Please close it before starting the macro.")
+            Kill()
+            WinActivate("Rus' Grow a Garden Macro")
+            return
+        }
+
+        tabCheck := 0
+        SetToolTip("Checking if player list is open...")
+        Loop 50 {
+            if(macro_running = false) {
+                break
+            }
+
+            tabString := GetOCRRect(A_ScreenWidth-500, 0, 500, 500)
+
+            if(InStr(tabString, "People") || InStr(tabString, "Scheckles")) {
+                tabCheck++
+            }
+        }
+        SetToolTip("")
+
+        if(tabCheck > 25) {
+            MsgBox("The player list is open! Please close it before starting the macro.")
+            Kill()
+            WinActivate("Rus' Grow a Garden Macro")
+            return
         }
 
         SetToolTip("Looking for Recall Wrench...")
@@ -545,14 +562,19 @@ setConfig(*) {
         Sleep(2000)
 
         t1() {
+            if(macro_running = false) {
+                ToolTip("")
+                Kill()
+                return
+            }
             ToolTip("Left click where the dialogue option to enter the gear shop is located.")
         }
         SetTimer(t1, 16)
         KeyWait("LButton", "D")
         MouseGetPos(&mouse_x, &mouse_y)
-
-        SetTimer(t1, 0)
         ToolTip("")
+        SetTimer(t1, 0)
+
         SetSetting("Config", "gear_enter_point_set", "true")
         SetSetting("Config", "gear_enter_point_x", mouse_x)
         SetSetting("Config", "gear_enter_point_y", mouse_y)
@@ -560,12 +582,69 @@ setConfig(*) {
         CONFIG['Config']["gear_enter_point_x"] := mouse_x
         CONFIG['Config']["gear_enter_point_y"] := mouse_y
 
-        ToolTip("Done!")
+        Sleep(2000)
+        Press("\")
+        Press("D", 5)
+        Press("S")
+        Press("D")
+        Press("Enter")
+        Press("\")
+        Sleep(100)
+        HoldKey("S", 0.9)
+        Press("E")
+        Sleep(500)
+
+        t2() {
+            if(macro_running = false) {
+                ToolTip("")
+                Kill()
+                return
+            }
+            ToolTip("Left click the top left of the egg shop box.")
+        }
+        SetTimer(t2, 16)
+        KeyWait("LButton", "D")
+        MouseGetPos(&mouse_x, &mouse_y)
+        ToolTip("")
+        SetTimer(t2, 0)
+
+        SetSetting("Config", "egg_top_corner_set", "true")
+        SetSetting("Config", "egg_top_corner_x", mouse_x)
+        SetSetting("Config", "egg_top_corner_y", mouse_y)
+        CONFIG['Config']["egg_top_corner_set"] := "true"
+        CONFIG['Config']["egg_top_corner_x"] := mouse_x
+        CONFIG['Config']["egg_top_corner_y"] := mouse_y
+
+        Sleep(1500)
+
+        t3() {
+            if(macro_running = false) {
+                ToolTip("")
+                Kill()
+                return
+            }
+            ToolTip("Left click the bottom right of the egg shop box.")
+        }
+        SetTimer(t3, 16)
+        KeyWait("LButton", "D")
+        MouseGetPos(&mouse_x, &mouse_y)
+        ToolTip("")
+        SetTimer(t3, 0)
+
+        SetSetting("Config", "egg_bottom_corner_set", "true")
+        SetSetting("Config", "egg_bottom_corner_x", mouse_x)
+        SetSetting("Config", "egg_bottom_corner_y", mouse_y)
+        CONFIG['Config']["egg_bottom_corner_set"] := "true"
+        CONFIG['Config']["egg_bottom_corner_x"] := mouse_x
+        CONFIG['Config']["egg_bottom_corner_y"] := mouse_y
+
+        Sleep(600)
+
+        ToolTip("Done! You can now run the macro.")
         
         SetTimer((*) => (
             ToolTip("")
-        ), 1000)
-
+        ), 2000)
     }
 
 }
@@ -753,96 +832,160 @@ Macro() {
 
     Press("\")
 
+    trigger_egg_macro := true
     if(trigger_egg_macro) {
-        ; egg 1
+        ; go to egg 1
         HoldKey("S", 0.9)
         Press("E")
         Sleep(500)
-        SetToolTip("Buying egg 1...")
-        egg1Text := GetOCR()
+        SetToolTip("Checking egg 1...")
+        egg1Count := 0
         buyEgg1 := false
-        for i, egg in chosenEggs {
-            if (InStr(egg1Text, "Purchase " egg)) {
-                buyEgg1 := true
-                break
+
+        Loop 50 {
+            egg1Text := GetOCRRect(
+                CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_top_corner_y"],
+                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
+            )
+            DebugLog("Egg 1 Text: " egg1Text)
+            for i, egg in chosenEggs {
+                if (InStr(egg1Text, "Purchase " egg)) {
+                    egg1Count++
+                }
             }
         }
-        if(buyEgg1) {
-            SetToolTip("Buying egg")
-        } else {
-            SetToolTip("Skipping egg")
+
+        SetToolTip("")
+
+        if(egg1Count > 25){
+           buyEgg1 := true
         }
+
+        if(buyEgg1) {
+            SetToolTip("Buying egg 1")
+        } else {
+            SetToolTip("Skipping egg 1")
+        }
+
+        ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
 
         if(buyEgg1) {
+            ; buy
             Press("Enter")
         } else {
+            ; hit x
             Press("D", 2)
             Press("Enter")
         }
         SetToolTip("")
         Press("\")
 
-
-        ; egg 2
+        ; go to egg 2
         HoldKey("S", 0.2)
         Press("E")
         Sleep(500)
-        egg2Text := GetOCR()
+        SetToolTip("Checking egg 2...")
+        egg2Count := 0
         buyEgg2 := false
-        for i, egg in chosenEggs {
-            if (InStr(egg2Text, "Purchase " egg)) {
-                buyEgg2 := true
-                break
+
+        Loop 50 {
+            egg2Text := GetOCRRect(
+                CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_top_corner_y"],
+                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
+            )
+            DebugLog("Egg 2 Text: " egg2Text)
+            for i, egg in chosenEggs {
+                if (InStr(egg2Text, "Purchase " egg)) {
+                    egg2Count++
+                }
             }
         }
+
+        SetToolTip("")
+
+        if(egg2Count > 25){
+            buyEgg2 := true
+        }
+
         if(buyEgg2) {
-            SetToolTip("Buying egg 2...")
+            SetToolTip("Buying egg 2")
         } else {
             SetToolTip("Skipping egg 2")
         }
+
+        ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
 
         if(buyEgg2) {
+            ; buy
             Press("Enter")
         } else {
+            ; hit x
             Press("D", 2)
             Press("Enter")
         }
         SetToolTip("")
         Press("\")
 
-        ; egg 3
+        ; go to egg 3
         HoldKey("S", 0.2)
         Press("E")
         Sleep(500)
-        egg3Text := GetOCR()
+        SetToolTip("Checking egg 3...")
+        egg3Count := 0
         buyEgg3 := false
-        for i, egg in chosenEggs {
-            if (InStr(egg3Text, "Purchase " egg)) {
-                buyEgg3 := true
-                break
+
+        Loop 50 {
+            egg3Text := GetOCRRect(
+                CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_top_corner_y"],
+                CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
+                CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
+            )
+            DebugLog("Egg 3 Text: " egg3Text)
+            for i, egg in chosenEggs {
+                if (InStr(egg3Text, "Purchase " egg)) {
+                    egg3Count++
+                }
             }
         }
+
+        SetToolTip("")
+
+        if(egg3Count > 25){
+            buyEgg3 := true
+        }
+
         if(buyEgg3) {
-            SetToolTip("Buying egg 3...")
+            SetToolTip("Buying egg 3")
         } else {
             SetToolTip("Skipping egg 3")
         }
+
+        ; navigate to egg ui
         Press("\")
         Press("D", 3)
         Press("S")
+
         if(buyEgg3) {
+            ; buy
             Press("Enter")
         } else {
+            ; hit x
             Press("D", 2)
             Press("Enter")
         }
         SetToolTip("")
+        Press("\")
 
         trigger_egg_macro := false
     }
