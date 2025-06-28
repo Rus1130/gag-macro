@@ -307,40 +307,40 @@ StartMacro(*) {
             return
         }
 
-        SetToolTip("Looking for Recall Wrench...")
-        recallCount := 0 
-        loop 8 {
-            if(macro_running = false) {
-                break
-            }
-            str := RegExReplace(GetOCR(), "Looking for Recall Wrench\.{1,3}", "")            
-            if(InStr(str, "Recall") = 0) {
-                recallCount++
-            }
-        }
+        ; SetToolTip("Looking for Recall Wrench...")
+        ; recallCount := 0 
+        ; loop 8 {
+        ;     if(macro_running = false) {
+        ;         break
+        ;     }
+        ;     str := RegExReplace(GetOCR(), "Looking for Recall Wrench\.{1,3}", "")            
+        ;     if(InStr(str, "Recall") = 0) {
+        ;         recallCount++
+        ;     }
+        ; }
 
-        if(recallCount > 4){
-            SetToolTip("Recall Wrench not found! Equipping now...")
-            Press("\", 2)
-            LeftClick()
-            Press("\")
-            Press("``")
-            Press("D", 3)
-            Press("S", 2)
-            Press("Enter")
-            Send("^a")
-            Press("Backspace")
-            Send("Recall")
-            Press("Enter")
-            Press("S", 3)
-            Press("W", 2)
-            Press("Enter")
-            Press("S")
-            Press("D")
-            Press("Enter")
-            Press("``")
-        }
-        SetToolTip("")
+        ; if(recallCount > 4){
+        ;     SetToolTip("Recall Wrench not found! Equipping now...")
+        ;     Press("\", 2)
+        ;     LeftClick()
+        ;     Press("\")
+        ;     Press("``")
+        ;     Press("D", 3)
+        ;     Press("S", 2)
+        ;     Press("Enter")
+        ;     Send("^a")
+        ;     Press("Backspace")
+        ;     Send("Recall")
+        ;     Press("Enter")
+        ;     Press("S", 3)
+        ;     Press("W", 2)
+        ;     Press("Enter")
+        ;     Press("S")
+        ;     Press("D")
+        ;     Press("Enter")
+        ;     Press("``")
+        ; }
+        ; SetToolTip("")
 
         Setup()
     }
@@ -849,7 +849,7 @@ Macro() {
                 CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
                 CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
             )
-            DebugLog("Egg 1 Text: " egg1Text)
+
             for i, egg in chosenEggs {
                 if (InStr(egg1Text, "Purchase " egg)) {
                     egg1Count++
@@ -886,7 +886,7 @@ Macro() {
         Press("\")
 
         ; go to egg 2
-        HoldKey("S", 0.2)
+        HoldKey("S", 0.18)
         Press("E")
         Sleep(500)
         SetToolTip("Checking egg 2...")
@@ -900,7 +900,7 @@ Macro() {
                 CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
                 CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
             )
-            DebugLog("Egg 2 Text: " egg2Text)
+
             for i, egg in chosenEggs {
                 if (InStr(egg2Text, "Purchase " egg)) {
                     egg2Count++
@@ -937,7 +937,7 @@ Macro() {
         Press("\")
 
         ; go to egg 3
-        HoldKey("S", 0.2)
+        HoldKey("S", 0.18)
         Press("E")
         Sleep(500)
         SetToolTip("Checking egg 3...")
@@ -951,7 +951,7 @@ Macro() {
                 CONFIG['Config']["egg_bottom_corner_x"] - CONFIG['Config']["egg_top_corner_x"],
                 CONFIG['Config']["egg_bottom_corner_y"] - CONFIG['Config']["egg_top_corner_y"]
             )
-            DebugLog("Egg 3 Text: " egg3Text)
+
             for i, egg in chosenEggs {
                 if (InStr(egg3Text, "Purchase " egg)) {
                     egg3Count++
