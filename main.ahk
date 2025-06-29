@@ -159,6 +159,19 @@ DebugLog(text, newLine := 0){
     FileAppend("`n[" timestamp "] "  text, "debug_log.txt")
 }
 
+OrbitCamera(dx := 50, dy := 0) {
+    ; Press and hold right mouse button
+    Send("{RButton down}")
+    Sleep(20)
+
+    ; Move the mouse relatively
+    MouseMove(dx, dy, 0, "R")
+    Sleep(20)
+
+    ; Release right mouse button
+    Send("{RButton up}")
+}
+
 HoldKey(key, sec) {
     Send("{" key " down}")
     Sleep(sec * 1000)
@@ -385,12 +398,7 @@ AlignCamera() {
     SetToolTip("Reset camera orbit")
     Press("LShift")
     Sleep(500)
-    loop 200 {
-        if(macro_running = false) {
-            break
-        }
-        DllCall("user32.dll\mouse_event", "UInt", 0x0001, "Int", 0, "Int", 10, "UPtr", 0)
-    }
+    SmoothMove(A_ScreenWidth / 2, A_ScreenHeight, 10, 2)
     SetToolTip("")
 
     ; turn off shift lock

@@ -34,3 +34,5 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 
 # Tips
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.
+# Keep in Mind
+* The macro may not force close itself on `kill_key` press if it is pressed during set up. This is why `window_failsafe` is enabled by default.
