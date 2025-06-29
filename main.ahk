@@ -220,6 +220,19 @@ SmoothMove(toX, toY, steps := 50, delay := 5) {
 StartMacro(*) {
     global macro_running, seedIndexes, gearIndexes, chosenEggs, CONFIG
     if !macro_running {
+
+        multiple := false
+        if CONFIG["Config"]["gear_enter_point_set"] = "false" ||
+              CONFIG["Config"]["egg_top_corner_set"] = "false" ||
+              CONFIG["Config"]["egg_bottom_corner_set"] = "false" 
+                multiple := true
+
+        if(multiple) {
+            MsgBox("You must set the config before starting the macro.`nHit the 'Set Config' button to do so.")
+            Kill()
+            return
+        }
+          
         if(CONFIG["Config"]["gear_enter_point_set"] = "false"){
             MsgBox("Gear entrance point not set! Hit the 'Set Config' button.")
             Kill()
