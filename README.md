@@ -3,8 +3,7 @@ This is a macro for the hit Roblox game Grow a Garden.
 1. Run the `main.exe` file. The decompiled `main.ahk` file is included for reference, or if you want to add your own modifications.
 2. Make sure that shiftlock is set to **off** and your camera mode is set to **Default (Classic)** and your movement mode is **Default (Keyboard)**.
 3. The Recall Wrench should be in your **2nd** hotbar slot, and should not be equipped. The macro will automatically equip it when needed.
-4. In order to run the macro, make sure that you click the "Set Config" button and follow the directions on-screen. This needs to be done only once, but can be done as many times as you want. This allows for certain variables to be set that cannot normally be changed by the user via the UI.
-**YOU DO NOT NEED TO CLICK "SET CONFIG" IN ORDER TO SET THE BUY OPTIONS FOR THE MACRO.**
+4. In order to run the macro, make sure that you click the "Set Config" button and follow the directions on-screen. This needs to be done only once, but can be done as many times as you want. This allows for certain variables to be set that cannot normally be changed by the user via the UI. **YOU DO NOT NEED TO CLICK "SET CONFIG" IN ORDER TO SET THE BUY OPTIONS FOR THE MACRO.**
 # Features
 * Automatically buys seeds, gear, and eggs (duh)
 * Automatic character alignment
