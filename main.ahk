@@ -278,7 +278,7 @@ StartMacro(*) {
 
             chatString := GetOCRRect(0, 0, 500, 500)
 
-            if(InStr(chatString, "[Tip]") || RegExMatch(chatString, "translates( supported lang)?")) {
+            if(InStr(chatString, "[Tip]") || RegExMatch(chatString, "translates( supported lang)?") || StrLen(chatString) > 100) {
                 chatCheck++
             }
         }
@@ -304,12 +304,13 @@ StartMacro(*) {
                 tabCheck++
             }
         }
-        ; The server has shut down.
         SetToolTip("")
 
         if(tabCheck > 25) {
             Press("Tab")
         }
+
+        Sleep(100)
 
         ; SetToolTip("Looking for Recall Wrench...")
         ; recallCount := 0 
@@ -748,66 +749,63 @@ Macro() {
 
     scanCount := CONFIG["Settings"]["failsafe_scan_count"]
 
-    ; internet failsafe
-    if(CONFIG["Settings"]["internet_failsafe"] == "true"){
-        count := 0
-        SetToolTip("Checking internet connection...")
-        Loop scanCount {
+    internetFailsafeCount := 0
+    shutdownFailsafeCount := 0
+    otherFailsafeCount := 0
+
+    SetToolTip("Checking failsafes...")
+    Sleep(100)
+    i := 1
+    Loop scanCount {
+        if(macro_running = false) {
+            break
+        }
+
+        SetToolTip(i "/" scanCount)
+
+        if(CONFIG["Settings"]["internet_failsafe"] == "true"){
             internetFailsafe := GetOCR()
-            if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect"){
-                count++
+            if(internetFailsafe == "Disconnected Lost connection to the game server, please reconnect (Error Code: 277) Leave Reconnect") {
+                internetFailsafeCount++
             }
         }
 
-        SetToolTip("")
-
-        if(count > (scanCount / 2)){
-            MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
-            ExitApp
-            return
-        }
-    }
-
-    ; shutdown failsafe
-    if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
-        count := 0
-        SetToolTip("Checking for server shutdown...")
-        Loop scanCount {
+        if(CONFIG["Settings"]["shutdown_failsafe"] == "true"){
             shutdownFailsafe := GetOCR()
-            if(shutdownFailsafe == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect"){
-                count++
+            if(shutdownFailsafe == "Disconnected The game has shut down (Error Code: 288) Leave Reconnect") {
+                shutdownFailsafeCount++
             }
         }
 
-        SetToolTip("")
-
-        if(count > (scanCount / 2)){
-            MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
-            ExitApp
-            return
-        }
-    }
-
-    ; other failsafe
-    if(CONFIG["Settings"]["other_failsafe"] == "true"){
-        count := 0
-        SetToolTip("Checking for other failsafe...")
-        Loop scanCount {
+        if(CONFIG["Settings"]["other_failsafe"] == "true"){
             otherFailsafe := GetOCR()
-            if(RegExMatch(otherFailsafe, "Disconnected (.*) Leave Reconnect")){
-                count++
+            if(RegExMatch(otherFailsafe, "Disconnected (.*) Leave Reconnect")) {
+                otherFailsafeCount++
             }
         }
 
-        SetToolTip("")
-
-        if(count > (scanCount / 2)){
-            MsgBox("Game was terminated for an unspecified reason`nMacro has been terminated.`n" ToT())
-            ExitApp
-            return
-        }
+        i++
     }
 
+    if(internetFailsafeCount > (scanCount / 2)){
+        MsgBox("Internet was disconnected`nMacro has been terminated.`n" ToT())
+        ExitApp
+        return
+    }
+
+    if(shutdownFailsafeCount > (scanCount / 2)){
+        MsgBox("Server has shut down`nMacro has been terminated.`n" ToT())
+        ExitApp
+        return
+    }
+
+    if(otherFailsafeCount > (scanCount / 2)){
+        MsgBox("Game was terminated for an unspecified reason`nMacro has been terminated.`n" ToT())
+        ExitApp
+        return
+    }
+
+    SetToolTip("")
     Sleep(1000)
 
 
