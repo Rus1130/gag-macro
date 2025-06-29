@@ -26,11 +26,11 @@ This macro has several failsafes to ensure that it does not run when it shouldn'
 * The config setup is done by clicking the "Set Config" button in the UI, and it must bedone before your first run of the macro. If not done, the macro will let you know and it will not run.
 * These are the points that the macro will ask you for:
 
-| Name               | Image                                                                 | Notes                              |
-|--------------------|-----------------------------------------------------------------------|------------------------------------|
-| `gear_enter_point` | ![gear_enter_point](./imgs/gear_entry.png "Gear Enter Point")         | Anywhere inside the blue rectangle |
-| `egg_top_corner`   | ![egg_top_corner](./imgs/egg_top.png "Egg Top Corner")                |                                    |
-| `egg_bottom_corner`| ![egg_bottom_corner](./imgs/egg_bottom.png "Egg Bottom Corner")       |                                    |
+| Name               | Image                                                                 | Notes                                                        |
+|--------------------|-----------------------------------------------------------------------|--------------------------------------------------------------|
+| `gear_enter_point` | ![gear_enter_point](./imgs/gear_entry.png "Gear Enter Point")         | Anywhere inside the blue rectangle                           |
+| `egg_top_corner`   | ![egg_top_corner](./imgs/egg_top.png "Egg Top Corner")                | Ensure that "Purchase" is entirely to the left of the click  |
+| `egg_bottom_corner`| ![egg_bottom_corner](./imgs/egg_bottom.png "Egg Bottom Corner")       |                                                              |
 
 # Tips
 * I would **HEAVILY SUGGEST** sitting by your computer while the macro runs its first run, just to make sure that it works as intended.
