@@ -461,7 +461,7 @@ AlignCamera() {
     LeftClick()
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
-    Loop 10 {
+    Loop 7 {
         Send("{WheelDown}")
     }
 }
