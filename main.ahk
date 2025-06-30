@@ -906,7 +906,10 @@ Macro() {
 
     Press("\")
 
-    if(trigger_egg_macro) {
+    trigger_egg_macro := true
+
+    buyAllEggs := CONFIG['Settings']["buy_all_eggs"] = "true"
+    if(trigger_egg_macro && !buyAllEggs) {
         ; go to egg 1
         HoldKey("S", 0.9)
         Press("E")
@@ -994,6 +997,7 @@ Macro() {
             )
 
             for i, egg in chosenEggs {
+                DebugLog("Egg 2 text: " egg2Text)
                 lev := Fuz.LevenshteinDistance(egg2Text, egg)
 
                 if(lev < 4){
@@ -1087,6 +1091,30 @@ Macro() {
         Press("\")
 
         trigger_egg_macro := false
+    } else if(trigger_egg_macro && buyAllEggs) {
+        HoldKey("S", 0.9)
+        Press("E")
+        Sleep(1000)
+        Press("\")
+        Press("D", 3)
+        Press("S")
+        Press("Enter")
+
+        HoldKey("S", 0.18)
+        Press("E")
+        Sleep(1000)
+        Press("\")
+        Press("D", 3)
+        Press("S")
+        Press("Enter")
+
+        HoldKey("S", 0.18)
+        Press("E")
+        Sleep(1000)
+        Press("\")
+        Press("D", 3)
+        Press("S")
+        Press("Enter")
     }
 
     Press("\", 2)
