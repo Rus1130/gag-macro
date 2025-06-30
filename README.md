@@ -1,5 +1,6 @@
 This is a macro for the hit Roblox game Grow a Garden.
 # How to Use
+**Only works on 4K resolution :(**
 1. Make sure that AutoHotKey version 2.0 is installed on your computer. You can download it from [here](https://www.autohotkey.com/).
 2. Run `main.ahk`.
 3. Make sure that shiftlock is set to **off** and your camera mode is set to **Default (Classic)** and your movement mode is **Default (Keyboard)**.
