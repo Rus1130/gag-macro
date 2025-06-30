@@ -179,7 +179,7 @@ HoldKey(key, sec) {
 }
 
 Press(key, num := 1, delay := 100) {
-    Sleep(20)
+    Sleep(150)
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
         SetToolTip("")
