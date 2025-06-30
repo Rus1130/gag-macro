@@ -179,6 +179,7 @@ HoldKey(key, sec) {
 }
 
 Press(key, num := 1, delay := 100) {
+    Sleep(20)
     activeWindow := WinGetTitle("A")
     if(CONFIG['Settings']["window_failsafe"] = "true" && activeWindow != "Roblox" && activeWindow != "Rus' Grow a Garden Macro") {
         SetToolTip("")
@@ -460,7 +461,9 @@ AlignCamera() {
     LeftClick()
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
-    HoldKey("O", 0.5)
+    Loop 10 {
+        Send("{WheelDown}")
+    }
 }
 
 Setup() {
