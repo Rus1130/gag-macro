@@ -460,7 +460,7 @@ AlignCamera() {
     LeftClick()
     SetToolTip("Resetting zoom")
     HoldKey("I", 10)
-    Loop 8 {
+    Loop 10 {
         Send("{WheelDown}")
     }
 }
@@ -906,8 +906,6 @@ Macro() {
 
     Press("\")
 
-    trigger_egg_macro := true
-
     buyAllEggs := CONFIG['Settings']["buy_all_eggs"] = "true"
     if(trigger_egg_macro && !buyAllEggs) {
         ; go to egg 1
@@ -1092,6 +1090,7 @@ Macro() {
 
         trigger_egg_macro := false
     } else if(trigger_egg_macro && buyAllEggs) {
+        Sleep(100)
         HoldKey("S", 0.9)
         Press("E")
         Sleep(1000)
@@ -1099,7 +1098,9 @@ Macro() {
         Press("D", 3)
         Press("S")
         Press("Enter")
+        Press("\")
 
+        Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
@@ -1107,7 +1108,9 @@ Macro() {
         Press("D", 3)
         Press("S")
         Press("Enter")
+        Press("\")
 
+        Sleep(100)
         HoldKey("S", 0.18)
         Press("E")
         Sleep(1000)
@@ -1115,6 +1118,9 @@ Macro() {
         Press("D", 3)
         Press("S")
         Press("Enter")
+        Press("\")
+
+        trigger_egg_macro := false
     }
 
     Press("\", 2)
